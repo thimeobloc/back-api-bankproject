@@ -37,7 +37,8 @@ def transfer_endpoint(balance: transferCreate):
     recipient = next((account for account in accounts_db if account["id"] == balance.to_account_id), None)
     if not sender or not recipient:
         raise HTTPException(status_code=404, detail="Account not found")
-
+    if sender["id"] == recipient["id"]:
+        return {"Transaction impossible"}
     if not amount_verification(balance.amount):
         return {"Le montant donné est invalide"}
 
