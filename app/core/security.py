@@ -34,5 +34,8 @@ def create_access_token(data: dict, expires_delta: timedelta | None = None):
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
 
-def deposite_verification(amount: int):
-    return amount>=0;
+def amount_verification(amount: float):
+    return amount>=0
+
+def enough_amount(amount: float, balance: float):
+    return amount<balance
