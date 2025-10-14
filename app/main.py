@@ -22,3 +22,5 @@ def read_db():
         "withdraws": withdraws,
         "transfers": transfers
     }
+
+app = FastAPI()
