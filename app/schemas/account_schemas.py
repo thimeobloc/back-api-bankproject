@@ -9,7 +9,7 @@ class AccountBase(BaseModel):
     transfer: list = []
 
 class AccountCreate(AccountBase):
-    pass  # pas d'id ici à la création
+    pass  
 
 class AccountOut(AccountBase):
     id: int
