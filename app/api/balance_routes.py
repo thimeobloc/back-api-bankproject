@@ -17,20 +17,17 @@ def deposit_endpoint(balance: depositCreate):
         account["balance"] += balance.amount
 
         balance_id = len(balances_db) + 1
-        account["deposit"].append({
+
+        temp = {
             "id": balance_id,
             "account_id": balance.account_id,
             "amount": balance.amount,
             "type": "deposit",
             "date": balance.date
-        })
-        balances_db.append({
-            "id": balance_id,
-            "account_id": balance.account_id,
-            "amount": balance.amount,
-            "type": "deposit",
-            "date": balance.date
-        })
+        }
+
+        account["deposit"].append(temp)
+        balances_db.append(temp)
 
         return {"message": f"Deposit of {balance.amount}€ successful", "new_balance": account["balance"]}
 
@@ -51,32 +48,46 @@ def transfer_endpoint(balance: transferCreate):
         sender["balance"] -= balance.amount
 
         balance_id = len(balances_db) + 1
-        sender["transfer"].append({
+
+        temp = {
             "id": balance_id,
             "from_account_id": balance.from_account_id,
             "to_account_id": balance.to_account_id,
-            "account_id": balance.account_id,
-            "amount": -balance.amount,
-            "type": "transfer",
-            "date": balance.date
-        })
-        recipient["transfer"].append({
-            "id": balance_id,
-            "from_account_id": balance.from_account_id,
-            "to_account_id": balance.to_account_id,
-            "account_id": balance.account_id,
             "amount": balance.amount,
             "type": "transfer",
             "date": balance.date
-        })
-        balances_db.append({
-            "id": balance_id,
-            "from_account_id": balance.from_account_id,
-            "to_account_id": balance.to_account_id,
-            "account_id": balance.account_id,
-            "amount": balance.amount,
-            "type": "deposit",
-            "date": balance.date
-        })
+        }
+
+        sender["transfer"].append(temp)
+        recipient["transfer"].append(temp)
+        balances_db.append(temp)
 
         return {"message": f"Deposit of {balance.amount}€ successful", "new_balance sender": sender["balance"], "new_balance recipient": recipient["balance"]}
+
+@router.post("/withdraw")
+def withdraw_endpoint(balance: withdrawCreate):
+    account = next((account for account in accounts_db if account["id"] == balance.account_id), None)
+    if not account:
+        raise HTTPException(status_code=404, detail="Account not found")
+
+    if not amount_verification(balance.amount):
+        return {"Le montant donné est invalide"}
+    if not enough_amount(balance.amount, account["balance"]):
+        return {"Monsieur, vous êtes pauvre"}
+    else:
+        account["balance"] -= balance.amount
+
+        balance_id = len(balances_db) - 1
+
+        temp = {
+            "id": balance_id,
+            "account_id": balance.account_id,
+            "amount": balance.amount,
+            "type": "withdraw",
+            "date": balance.date
+        }
+
+        account["withdraw"].append(temp)
+        balances_db.append(temp)
+
+        return {"message": f"Deposit of {balance.amount}€ successful", "new_balance": account["balance"]}
