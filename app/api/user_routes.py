@@ -17,7 +17,7 @@ def create_user_endpoint(user: UserCreate):
     users_db.append(user_dict)
 
     # Création du compte lié
-    account = AccountCreate(user_id=user_id, balance=0.0)
+    account = AccountCreate(user_id=user_id, balance=100.0, main=True)
     account_dict = account.dict()
     account_dict["id"] = len(accounts_db) + 1
     accounts_db.append(account_dict)
