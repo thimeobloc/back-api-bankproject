@@ -12,9 +12,9 @@ def read_db():
     withdraws = []
     transfers = []
     for account in accounts_db:
-        deposits.append(account["deposit"])
-        withdraws.append(account["withdraw"])
-        transfers.append(account["transfer"])
+        deposits.append(account["deposit"]) #Dépot d'argent
+        withdraws.append(account["withdraw"]) #Retrait d'argent
+        transfers.append(account["transfer"]) #Transfer d'argent
     return {
         "users": users_db,
         "accounts": accounts_db,
@@ -23,4 +23,3 @@ def read_db():
         "transfers": transfers
     }
 
-app = FastAPI()
