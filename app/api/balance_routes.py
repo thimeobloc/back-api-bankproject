@@ -169,5 +169,31 @@ def get_transfer(transfer_id: int, user_id: int):
 
     return transfer
     
+@router.get("/deposit/{user_id}/{deposit_id}", response_model=depositCreate)
+def get_deposit(deposit_id: int, user_id: int):
+    deposit = next((b for b in balances_db if b["type"] == "deposit" and b["id"] == deposit_id), None)
+    if not deposit:
+        raise HTTPException(status_code=404, detail="Deposit not found")
+    
+    account = next((b for b in accounts_db if b["id"] == deposit["account_id"]), None)
+
+    if account["user_id"] != user_id:
+        raise HTTPException(status_code=404, detail="Account not found")
+
+    return deposit
+
+@router.get("/withdraw/{user_id}/{withdraw_id}", response_model=withdrawCreate)
+def get_withdraw(withdraw_id: int, user_id: int):
+    withdraw = next((b for b in balances_db if b["type"] == "withdraw" and b["id"] == withdraw_id), None)
+    if not withdraw:
+        raise HTTPException(status_code=404, detail="Withdraw not found")
+    
+    account = next((b for b in accounts_db if b["id"] == withdraw["account_id"]), None)
+
+    if account["user_id"] != user_id:
+        raise HTTPException(status_code=404, detail="Account not found")
+
+    return withdraw
+
 
 
