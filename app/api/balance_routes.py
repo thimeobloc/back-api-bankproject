@@ -21,8 +21,10 @@ def deposit_endpoint(balance: depositCreate):
         raise HTTPException(status_code=404, detail="Account not found")
     if not amount_verification(balance.amount):
         return {"error": "Le montant donné est invalide"}
+    if account["closed"]:
+        return {"error": "Transaction impossible l un des compte est fermé"}
 
-    account["balance"] += balance.amount 
+    account["balance"] += balance.amount
 
     deposit_counter += 1
     temp = {
@@ -42,7 +44,54 @@ def deposit_endpoint(balance: depositCreate):
     }
 
 
+
 # ---------------- WITHDRAWS ----------------
+
+
+@router.post("/transfer")
+def transfer_endpoint(balance: transferCreate):
+    sender = next((a for a in accounts_db if a["id"] == balance.from_account_id), None)
+    recipient = next((a for a in accounts_db if a["id"] == balance.to_account_id), None)
+
+    if not sender or not recipient:
+        raise HTTPException(status_code=404, detail="Account not found")
+
+    if sender["id"] == recipient["id"]:
+        return {"error": "Transaction impossible (même compte)"}
+    if sender["closed"] or recipient["closed"]:
+        return {"error": "Transaction impossible l un des compte est fermé"}
+    if not amount_verification(balance.amount):
+        return {"error": "Le montant donné est invalide"}
+
+    if not enough_amount(balance.amount, sender["balance"]):
+        return {"error": "Monsieur, vous êtes pauvre"}
+
+    sender["balance"] -= balance.amount
+    recipient["balance"] += balance.amount
+
+    balance_id = len(balances_db) + 1
+    temp = {
+        "id": balance_id,
+        "from_account_id": balance.from_account_id,
+        "to_account_id": balance.to_account_id,
+        "amount": balance.amount,
+        "type": "transfer",
+        "date": balance.date or datetime.now().isoformat()  
+    }
+
+    sender["transfer"].append(temp)
+    recipient["transfer"].append(temp)
+    balances_db.append(temp)
+
+    return {
+        "message": f"Transfer of {balance.amount}€ successful",
+        "new_balance_sender": sender["balance"],
+        "new_balance_recipient": recipient["balance"]
+    }
+
+
+
+
 @router.post("/withdraw")
 def withdraw_endpoint(balance: withdrawCreate):
     global withdraw_counter
@@ -53,6 +102,9 @@ def withdraw_endpoint(balance: withdrawCreate):
         return {"error": "Le montant donné est invalide"}
     if not enough_amount(balance.amount, account["balance"]):
         return {"error": "Monsieur, vous êtes pauvre"}
+
+    if account["closed"]:
+        return {"error": "Transaction impossible l un des compte est fermé"}
 
     account["balance"] -= balance.amount
 
