@@ -51,7 +51,7 @@ def deposit_endpoint(balance: depositCreate):
 @router.post("/transfer")
 def transfer_endpoint(balance: transferCreate):
     sender = next((a for a in accounts_db if a["id"] == balance.from_account_id), None)
-    recipient = next((a for a in accounts_db if a["id"] == balance.to_account_id), None)
+    recipient = next((b for b in accounts_db  if b["rib"] == balance.rib), None)
 
     if not sender or not recipient:
         raise HTTPException(status_code=404, detail="Account not found")
