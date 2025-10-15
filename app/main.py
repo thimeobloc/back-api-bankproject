@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from app.api.router import router as api_router
-from app.db.database import users_db, accounts_db
+from app.db.database import users_db, accounts_db, balances_db
 
 app = FastAPI(title="Bank API")
 
@@ -18,6 +18,7 @@ def read_db():
     return {
         "users": users_db,
         "accounts": accounts_db,
+        "balances":balances_db,
         "deposits": deposits,
         "withdraws": withdraws,
         "transfers": transfers

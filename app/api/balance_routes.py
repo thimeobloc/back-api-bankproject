@@ -155,6 +155,19 @@ def list_withdraws_by_account(account_id: int):
     return withdraws_sorted
 
 
+@router.get("/transfer/{user_id}/{transfer_id}", response_model=transferCreate)
+def get_transfer(transfer_id: int, user_id: int):
+    transfer = next((b for b in balances_db if b["type"] == "transfer" and b["id"] == transfer_id), None)
+    if not transfer:
+        raise HTTPException(status_code=404, detail="Transfer not found")
+    
+    account_post = next((b for b in accounts_db if b["id"] == transfer["from_account_id"]), None)
+    account_get = next((b for b in accounts_db if b["id"] == transfer["to_account_id"]), None)
 
+    if account_get["user_id"] != user_id and account_post["user_id"] != user_id:
+        raise HTTPException(status_code=404, detail="Account not found")
+
+    return transfer
+    
 
 
