@@ -37,26 +37,27 @@ def view_accounts(user_id: int):
     accounts=[]
     for acc in accounts_db:
         if user_id == acc["user_id"]:
-            accounts.append(acc)
+            if not acc["closed"]:
+                accounts.append(acc)
     creations_sorted = sorted(accounts, key=lambda x: x["date"], reverse=True)
 
     return creations_sorted
 
 
 @router.post("/closed/{account_id}/{user_id}")
-def close_account(account_id: int, user_id):
+def close_account(account_id: int, user_id: int):
     account = next((acc for acc in accounts_db if acc["id"] == account_id), None)
     user = next((use for use in users_db if use["id"] == user_id), None)
     if not account:
-        raise HTTPException(status_code=400, detail="Le compte n'existe pas")
+        raise HTTPException(status_code=400, detail="Le compte n\'existe pas")
     if not user:
-        raise HTTPException(status_code=400, detail="L'utilisateur' n'existe pas")
+        raise HTTPException(status_code=400, detail="L\'utilisateur n\'existe pas")
     if account["closed"]:
-        raise HTTPException(status_code=400, detail="Le compte n'existe plus")
+        raise HTTPException(status_code=400, detail="Le compte n\'existe plus")
     if account["main"]:
         raise HTTPException(status_code=400, detail="Vous ne pouvez pas clôturer votre compte principal")
     if account["user_id"] != user_id:
-        raise HTTPException(status_code=400, detail="Ce n'est pas votre compte monsieur")
+        raise HTTPException(status_code=400, detail="Ce n\'est pas votre compte monsieur")
     else:
         account["closed"] = True
         main_account = next((acc for acc in accounts_db if acc["user_id"] == user_id and acc["main"]==True), None)

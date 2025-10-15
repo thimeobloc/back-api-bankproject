@@ -17,6 +17,9 @@ def deposit_endpoint(balance: depositCreate):
     if not amount_verification(balance.amount):
         return {"error": "Le montant donné est invalide"}
 
+    if account["closed"]:
+        return {"error": "Transaction impossible l un des compte est fermé"}
+
     account["balance"] += balance.amount
 
     balance_id = len(balances_db) + 1
@@ -48,7 +51,8 @@ def transfer_endpoint(balance: transferCreate):
 
     if sender["id"] == recipient["id"]:
         return {"error": "Transaction impossible (même compte)"}
-
+    if sender["closed"] or recipient["closed"]:
+        return {"error": "Transaction impossible l un des compte est fermé"}
     if not amount_verification(balance.amount):
         return {"error": "Le montant donné est invalide"}
 
@@ -91,6 +95,9 @@ def withdraw_endpoint(balance: withdrawCreate):
 
     if not enough_amount(balance.amount, account["balance"]):
         return {"error": "Monsieur, vous êtes pauvre"}
+
+    if account["closed"]:
+        return {"error": "Transaction impossible l un des compte est fermé"}
 
     account["balance"] -= balance.amount
 
