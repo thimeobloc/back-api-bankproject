@@ -27,3 +27,5 @@ def create_user_endpoint(user: UserCreate):
 @router.get("/", response_model=list[UserOut])
 def list_users_endpoint():
     return users_db
+
+

@@ -7,7 +7,7 @@ from app.core.security import amount_verification, enough_amount
 router = APIRouter(prefix="/balances", tags=["Balances"])
 
 
-# 🟢 DÉPÔT
+
 @router.post("/deposit")
 def deposit_endpoint(balance: depositCreate):
     account = next((a for a in accounts_db if a["id"] == balance.account_id), None)
@@ -37,7 +37,7 @@ def deposit_endpoint(balance: depositCreate):
     }
 
 
-# 🔁 TRANSFERT
+
 @router.post("/transfer")
 def transfer_endpoint(balance: transferCreate):
     sender = next((a for a in accounts_db if a["id"] == balance.from_account_id), None)
@@ -55,7 +55,6 @@ def transfer_endpoint(balance: transferCreate):
     if not enough_amount(balance.amount, sender["balance"]):
         return {"error": "Monsieur, vous êtes pauvre"}
 
-    # Transfert effectif
     sender["balance"] -= balance.amount
     recipient["balance"] += balance.amount
 
@@ -80,7 +79,7 @@ def transfer_endpoint(balance: transferCreate):
     }
 
 
-# 🔻 RETRAIT
+
 @router.post("/withdraw")
 def withdraw_endpoint(balance: withdrawCreate):
     account = next((a for a in accounts_db if a["id"] == balance.account_id), None)
@@ -111,3 +110,51 @@ def withdraw_endpoint(balance: withdrawCreate):
         "message": f"Withdrawal of {balance.amount}€ successful",
         "new_balance": account["balance"]
     }
+
+@router.get("/transfers/{account_id}", response_model=list[transferCreate])
+def list_transfers_by_account(account_id: int):
+    transfers = [
+        b for b in balances_db
+        if b["type"] == "transfer"
+        and (b["from_account_id"] == account_id or b["to_account_id"] == account_id)
+    ]
+
+    if not transfers:
+        raise HTTPException(status_code=404, detail="Aucun transfert trouvé pour ce compte")
+
+    transfers_sorted = sorted(transfers, key=lambda x: x["date"], reverse=True)
+
+    return transfers_sorted
+
+@router.get("/deposits/{account_id}", response_model=list[depositCreate])
+def list_deposits_by_account(account_id: int):
+    deposits = [
+        b for b in balances_db
+        if b["type"] == "deposit" and b["account_id"] == account_id
+    ]
+
+    if not deposits:
+        raise HTTPException(status_code=404, detail="Aucun dépôt trouvé pour ce compte")
+
+    deposits_sorted = sorted(deposits, key=lambda x: x["date"], reverse=True)
+
+    return deposits_sorted
+
+@router.get("/withdraws/{account_id}", response_model=list[withdrawCreate])
+def list_withdraws_by_account(account_id: int):
+    withdraws = [
+        b for b in balances_db
+        if b["type"] == "withdraw" and b["account_id"] == account_id
+    ]
+
+    if not withdraws:
+        raise HTTPException(status_code=404, detail="Aucun retrait trouvé pour ce compte")
+
+    withdraws_sorted = sorted(withdraws, key=lambda x: x["date"], reverse=True)
+
+    return withdraws_sorted
+
+
+
+
+
