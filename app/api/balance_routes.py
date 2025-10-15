@@ -91,7 +91,6 @@ def complete_transfer_task(transfer_id: int):
 
 
 def delayed_complete_transfer(transfer_id: int, delay: int = 30):
-    """Attend delay secondes avant de compléter le transfert."""
     sleep(delay)
     complete_transfer_task(transfer_id)
 
@@ -127,8 +126,6 @@ def transfer_endpoint(balance: transferCreate, background_tasks: BackgroundTasks
 
     sender["transfer"].append(transfer_record)
     balances_db.append(transfer_record)
-
-    # Ajouter la tâche en arrière-plan pour compléter automatiquement le transfert
     background_tasks.add_task(delayed_complete_transfer, transfer_id=transfer_counter, delay=30)
 
     return {
