@@ -3,6 +3,7 @@ from app.schemas.user_schemas import UserCreate, UserOut
 from app.schemas.account_schemas import AccountCreate, AccountOut
 from app.core.security import hash_password
 from app.db.database import users_db, accounts_db
+from datetime import datetime
 
 router = APIRouter(prefix="/users", tags=["Users"])
 
@@ -20,6 +21,8 @@ def create_user_endpoint(user: UserCreate):
     account = AccountCreate(user_id=user_id, balance=100.0, main=True)
     account_dict = account.dict()
     account_dict["id"] = len(accounts_db) + 1
+    account_dict["date"] = account.date or datetime.now().isoformat()
+    account_dict["closed"] = False
     accounts_db.append(account_dict)
 
     return user_dict
