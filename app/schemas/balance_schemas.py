@@ -1,22 +1,19 @@
 from pydantic import BaseModel
 from datetime import datetime
-
+from typing import Optional
 
 class depositCreate(BaseModel):
-    id: int
     account_id: int
     amount: float
-    date: datetime
-
-class withdrawCreate(BaseModel):
-    id: int
-    account_id: int
-    amount: float
-    date: datetime
+    date: Optional[datetime] = None  
 
 class transferCreate(BaseModel):
-    id: int
     from_account_id: int
     to_account_id: int
     amount: float
-    date: datetime
+    date: Optional[datetime] = None  # automatique si non fournie
+
+class withdrawCreate(BaseModel):
+    account_id: int
+    amount: float
+    date: Optional[datetime] = None  # automatique si non fournie
