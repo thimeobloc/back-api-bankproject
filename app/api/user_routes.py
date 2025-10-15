@@ -23,6 +23,7 @@ def create_user_endpoint(user: UserCreate):
     account_dict["id"] = len(accounts_db) + 1
     account_dict["date"] = account.date or datetime.now().isoformat()
     account_dict["closed"] = False
+    account_dict["status"] = False
     accounts_db.append(account_dict)
 
     return user_dict

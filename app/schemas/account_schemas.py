@@ -13,6 +13,7 @@ class AccountBase(BaseModel):
     transfer: List[Dict[str, Any]] = Field(default_factory=list)
     date: Optional[datetime] = None  # automatique si non fournie
     closed: bool = False
+    status: bool = False
 
 class AccountCreate(AccountBase):
     pass  

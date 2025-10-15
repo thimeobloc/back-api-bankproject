@@ -23,6 +23,7 @@ def create_account_endpoint(account: AccountCreate):
     account_dict["main"] = False
     account_dict["user_id"] = main_account["user_id"]
     account_dict["closed"] = False
+    account_dict["status"] = False
     account_dict["date"] = account.date or datetime.now().isoformat()
 
     accounts_db.append(account_dict)
@@ -58,6 +59,8 @@ def close_account(account_id: int, user_id: int):
         raise HTTPException(status_code=400, detail="Vous ne pouvez pas clôturer votre compte principal")
     if account["user_id"] != user_id:
         raise HTTPException(status_code=400, detail="Ce n\'est pas votre compte monsieur")
+    if account["status"]:
+        raise HTTPException(status_code=400, detail="Le compte a des transactions en cours")
     else:
         account["closed"] = True
         main_account = next((acc for acc in accounts_db if acc["user_id"] == user_id and acc["main"]==True), None)

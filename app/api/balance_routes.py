@@ -128,7 +128,6 @@ def withdraw_endpoint(balance: withdrawCreate):
 
 # ---------------- TRANSFERS ----------------
 def complete_transfer_task(transfer_id: int):
-    """Fonction pour compléter un transfert en arrière-plan."""
     transfer = next((b for b in balances_db if b["type"] == "transfer" and b["id"] == transfer_id), None)
     if not transfer or transfer["status"] != "pending":
         return
@@ -161,6 +160,7 @@ def transfer_endpoint(balance: transferCreate, background_tasks: BackgroundTasks
         return {"error": "Le montant donné est invalide"}
     if not enough_amount(balance.amount, sender["balance"]):
         return {"error": "Monsieur, vous êtes pauvre"}
+    
 
     sender["balance"] -= balance.amount
 
@@ -179,6 +179,8 @@ def transfer_endpoint(balance: transferCreate, background_tasks: BackgroundTasks
     sender["transfer"].append(transfer_record)
     balances_db.append(transfer_record)
     background_tasks.add_task(delayed_complete_transfer, transfer_id=transfer_counter, delay=30)
+    sender["status"] = True
+    recipient["status"] = True
 
     return {
         "message": f"Transfer of {balance.amount}€ created (pending)",
@@ -197,6 +199,7 @@ def complete_transfer(transfer_id: int):
     if transfer["status"] != "pending":
         return {"error": "Transfer already completed or aborted"}
 
+    sender = next((a for a in accounts_db if a["id"] == transfer["from_account_id"]), None)
     recipient = next((a for a in accounts_db if a["id"] == transfer["to_account_id"]), None)
     if not recipient:
         raise HTTPException(status_code=404, detail="Recipient account not found")
@@ -204,6 +207,9 @@ def complete_transfer(transfer_id: int):
     recipient["balance"] += transfer["amount"]
     recipient["transfer"].append(transfer)
     transfer["status"] = "completed"
+
+    sender["status"] = False
+    recipient["status"] = False
 
     return {
         "message": f"Transfer of {transfer['amount']}€ completed",
