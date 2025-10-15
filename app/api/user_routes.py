@@ -28,4 +28,15 @@ def create_user_endpoint(user: UserCreate):
 def list_users_endpoint():
     return users_db
 
+@router.get("/{user_id}", response_model=UserOut)
+def user_details(user_id: int):
+    user = next((u for u in users_db if u["id"] == user_id), None)
+    if not user:
+        return {"error": "User not found"}
+    
+    # Exclude password from the response
+    user_filtered = {k: v for k, v in user.items() if k != "password"}
+
+    return user_filtered
+
 
