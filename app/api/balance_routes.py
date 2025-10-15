@@ -1,5 +1,6 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, BackgroundTasks
 from datetime import datetime, timedelta
+from time import sleep
 from app.db.database import accounts_db, balances_db
 from app.schemas.balance_schemas import *
 from app.core.security import amount_verification, enough_amount
@@ -11,6 +12,7 @@ withdraw_counter = 0
 transfer_counter = 0
 
 
+# ---------------- DEPOSITS ----------------
 @router.post("/deposit")
 def deposit_endpoint(balance: depositCreate):
     global deposit_counter
@@ -20,7 +22,7 @@ def deposit_endpoint(balance: depositCreate):
     if not amount_verification(balance.amount):
         return {"error": "Le montant donné est invalide"}
 
-    account["balance"] += balance.amount
+    account["balance"] += balance.amount 
 
     deposit_counter += 1
     temp = {
@@ -40,6 +42,7 @@ def deposit_endpoint(balance: depositCreate):
     }
 
 
+# ---------------- WITHDRAWS ----------------
 @router.post("/withdraw")
 def withdraw_endpoint(balance: withdrawCreate):
     global withdraw_counter
@@ -71,8 +74,30 @@ def withdraw_endpoint(balance: withdrawCreate):
     }
 
 
+# ---------------- TRANSFERS ----------------
+def complete_transfer_task(transfer_id: int):
+    """Fonction pour compléter un transfert en arrière-plan."""
+    transfer = next((b for b in balances_db if b["type"] == "transfer" and b["id"] == transfer_id), None)
+    if not transfer or transfer["status"] != "pending":
+        return
+
+    recipient = next((a for a in accounts_db if a["id"] == transfer["to_account_id"]), None)
+    if not recipient:
+        return
+
+    recipient["balance"] += transfer["amount"]
+    recipient["transfer"].append(transfer)
+    transfer["status"] = "completed"
+
+
+def delayed_complete_transfer(transfer_id: int, delay: int = 30):
+    """Attend delay secondes avant de compléter le transfert."""
+    sleep(delay)
+    complete_transfer_task(transfer_id)
+
+
 @router.post("/transfer")
-def transfer_endpoint(balance: transferCreate):
+def transfer_endpoint(balance: transferCreate, background_tasks: BackgroundTasks):
     global transfer_counter
     sender = next((a for a in accounts_db if a["id"] == balance.from_account_id), None)
     recipient = next((a for a in accounts_db if a["id"] == balance.to_account_id), None)
@@ -86,7 +111,6 @@ def transfer_endpoint(balance: transferCreate):
     if not enough_amount(balance.amount, sender["balance"]):
         return {"error": "Monsieur, vous êtes pauvre"}
 
-    # Débiter immédiatement l'expéditeur
     sender["balance"] -= balance.amount
 
     transfer_counter += 1
@@ -96,14 +120,16 @@ def transfer_endpoint(balance: transferCreate):
         "to_account_id": balance.to_account_id,
         "amount": balance.amount,
         "type": "transfer",
-        "status": "pending",  # nouvel état
+        "status": "pending",
         "date": balance.date or datetime.now().isoformat(),
         "expiry": (datetime.now() + timedelta(seconds=30)).isoformat()
     }
 
-    # Stockage dans les historiques
     sender["transfer"].append(transfer_record)
     balances_db.append(transfer_record)
+
+    # Ajouter la tâche en arrière-plan pour compléter automatiquement le transfert
+    background_tasks.add_task(delayed_complete_transfer, transfer_id=transfer_counter, delay=30)
 
     return {
         "message": f"Transfer of {balance.amount}€ created (pending)",
@@ -126,7 +152,6 @@ def complete_transfer(transfer_id: int):
     if not recipient:
         raise HTTPException(status_code=404, detail="Recipient account not found")
 
-    # Créditer le destinataire
     recipient["balance"] += transfer["amount"]
     recipient["transfer"].append(transfer)
     transfer["status"] = "completed"
@@ -153,10 +178,7 @@ def abort_transfer(user_id: int, transfer_id: int):
     if transfer["status"] != "pending":
         return {"error": "Transfer cannot be aborted (already completed)"}
 
-    # Remboursement de l'expéditeur
     sender["balance"] += transfer["amount"]
-
-    # Suppression des références
     sender["transfer"] = [t for t in sender["transfer"] if t["id"] != transfer_id]
     balances_db.remove(transfer)
 
@@ -166,6 +188,7 @@ def abort_transfer(user_id: int, transfer_id: int):
     }
 
 
+# ---------------- GETTERS ----------------
 @router.get("/transfer/{transfer_id}", response_model=transferCreate)
 def get_transfer_by_id(transfer_id: int):
     transfer = next((b for b in balances_db if b["type"] == "transfer" and b["id"] == transfer_id), None)
