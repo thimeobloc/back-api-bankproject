@@ -55,7 +55,7 @@ def deposit_endpoint(balance: depositCreate, users_db = Depends(users_db), accou
         status="pending",
     )
 
-    deposit= deposit
+    db_deposit= deposit
     db.add(db_deposit)
     db.commit()
     db.refresh(db_deposit)
@@ -67,7 +67,7 @@ def deposit_endpoint(balance: depositCreate, users_db = Depends(users_db), accou
     }
 
 
-@router.get("/deposits/{account_id}/{user_id}", response_model=list[depositCreate])
+@router.get("/deposits/{account_id}/{user_id}", response_model=list[models.Deposit])
 def list_deposits_by_account(account_id: int, user_id: int, users_db = Depends(users_db), accounts_db = Depends(accounts_db)):
     """List all deposits for a specific account"""
 
@@ -151,7 +151,7 @@ def withdraw_endpoint(balance: withdrawCreate, users_db = Depends(users_db), acc
     }
 
 
-@router.get("/withdraws/{account_id}/{user_id}", response_model=list[withdrawCreate])
+@router.get("/withdraws/{account_id}/{user_id}", response_model=list[models.Withdraw])
 def list_withdraws_by_account(account_id: int, user_id: int, users_db = Depends(users_db), accounts_db = Depends(accounts_db)):
     """List all withdraws for a specific account"""
 
@@ -277,7 +277,7 @@ def transfer_endpoint(balance: transferCreate, background_tasks: BackgroundTasks
         "transfer_id": transfer_counter,
         "status": "pending",
         "new_balance_sender": sender.balance,
-        "will_complete_at": transfer_record["will_complete_at"]
+        "will_complete_at": "will_complete_at"
     }
 
 
@@ -320,7 +320,7 @@ def abort_transfer(user_id: int, transfer_id: int, users_db = Depends(users_db),
     }
 
 
-@router.get("/transfers/{account_id}/{user_id}", response_model=list[transferCreate])
+@router.get("/transfers/{account_id}/{user_id}", response_model=list[models.Transfer])
 def list_transfers_by_account(account_id: int, user_id: int, users_db = Depends(users_db), accounts_db = Depends(accounts_db), balances_db = Depends(balances_db)):
     account = next((a for a in accounts_db if a.id == account_id), None) # Find the account with his id
     user = next((use for use in users_db if use.id == user_id), None) #Look for the user with his id
