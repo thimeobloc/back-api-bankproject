@@ -169,10 +169,12 @@ def add_beneficiary(account_id: int, rib: str, name: str, user_id: int, db: Sess
         
     # Création du bénéficiaire
     beneficiary = models.Beneficiary(
-        account_id=account_id,
-        name=name,
-        rib=rib,
+    account_id=account_id,
+    name=name,
+    rib=rib,
+    user_id=user_id
     )
+
     db.add(beneficiary)
     db.commit()
     db.refresh(beneficiary)
