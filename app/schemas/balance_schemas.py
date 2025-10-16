@@ -3,22 +3,26 @@ from datetime import datetime
 from typing import Optional
 
 class depositCreate(BaseModel):
+    """Schema for deposit creation"""
     account_id: int
     amount: float
     date: Optional[datetime] = None  
 
 class withdrawCreate(BaseModel):
+    """Schema for withdraw creation"""
     account_id: int
     amount: float
     date: Optional[datetime] = None 
 
 class transferCreate(BaseModel):
+    """Schema for transfer creation"""
     from_account_id: int
     to_account_id: int
     amount: float
     date: Optional[datetime] = None 
 
 class transferResponse(transferCreate):
+    """Schema for transfer response"""
     id: int
     status: str
     expiry: Optional[datetime] = None

@@ -19,6 +19,10 @@ def login(user: LoginSchema):
     if not verify_password(user.password, user_in_db["password"]):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Mot de passe incorrect")
 
-    # Génère un token JWT
+    # crate a token
     token = create_access_token({"sub": user_in_db["email"]})
-    return {"access_token": token, "token_type": "bearer"}
+    return {"access_token": token, "token_type": "bearer"} #return the token and the token type
+
+
+
+

@@ -1,25 +1,52 @@
 import requests
+from datetime import datetime
 
-BASE_URL = "http://127.0.0.1:8000/users/"
+BASE_URL = "http://127.0.0.1:8000"
 
-def print_response(desc, response):
-    print(f"\n--- {desc} ---")
+def post(path, data):
+    response = requests.post(f"{BASE_URL}{path}", json=data)
+    print(f"\nPOST {path} ->", response.status_code)
     try:
         print(response.json())
     except Exception:
-        print("Erreur de décodage JSON :", response.text)
+        print(response.text)
+    return response.json() if response.status_code == 200 else None
+
+def get(path):
+    response = requests.get(f"{BASE_URL}{path}")
+    print(f"\nGET {path} ->", response.status_code)
+    try:
+        print(response.json())
+    except Exception:
+        print(response.text)
+    return response.json() if response.status_code == 200 else None
 
 
-user1 = {"name": "Alice", "email": "alice@example.com", "password": "pass123"}
-user2 = {"name": "Bob", "email": "bob@example.com", "password": "pass456"}
-user3 = {"name": "Charlie", "email": "charlie@example.com", "password": "pass789"}
+if __name__ == "__main__":
 
-print_response("Create Alice", requests.post(BASE_URL, json=user1))
-print_response("Create Bob", requests.post(BASE_URL, json=user2))
-print_response("Create Charlie", requests.post(BASE_URL, json=user3))
+    # Création des utilisateurs
+    user1 = post("/users/", {"name": "Alice", "email": "alice@example.com", "password": "pass123"})
+    user2 = post("/users/", {"name": "Bob", "email": "bob@example.com", "password": "pass456"})
+    user3 = post("/users/", {"name": "Charlie", "email": "charlie@example.com", "password": "pass789"})
 
-print_response("List all users", requests.get(BASE_URL))
+    # Création d'un compte supplémentaire pour chaque utilisateur
+    account1 = post("/accounts/", {"user_id": 1, "date": datetime.now().isoformat()})
+    account2 = post("/accounts/", {"user_id": 2, "date": datetime.now().isoformat()})
+    account3 = post("/accounts/", {"user_id": 3, "date": datetime.now().isoformat()})
 
-print_response("Get user 1 details", requests.get(BASE_URL + "1"))
-print_response("Get user 2 details", requests.get(BASE_URL + "2"))
-print_response("Get user 999 (inexistant)", requests.get(BASE_URL + "999"))
+    # Vérification des utilisateurs
+    get("/users/")
+
+    # Vérification des comptes de chaque utilisateur
+    get("/accounts/account/1/")
+    get("/accounts/account/2/")
+    get("/accounts/account/3/")
+
+    # Récupération des RIBs pour chaque compte
+    if account1:
+        get(f"/accounts/beneficiary/1/{account1['id']}/RIB")
+    if account2:
+        get(f"/accounts/beneficiary/2/{account2['id']}/RIB")
+    if account3:
+        get(f"/accounts/beneficiary/3/{account3['id']}/RIB")
+
