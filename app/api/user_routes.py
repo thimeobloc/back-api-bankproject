@@ -1,54 +1,57 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException, Depends
+from datetime import datetime
+from app.db import models
 from app.schemas.user_schemas import UserCreate, UserOut
 from app.schemas.account_schemas import AccountCreate, AccountOut
 from app.core.security import hash_password
-from app.db.database import users_db, accounts_db
-from app.api.account_routes import generate_rib
-from datetime import datetime
+from app.repositories.user_repository import UserRepo
+from sqlmodel import Session
+from app.db.database import engine, init_db, get_session
 
 router = APIRouter(prefix="/users", tags=["Users"])
 
-#<---------------- USERS ---------------->
-@router.post("/", response_model=UserOut)
-def create_user_endpoint(user: UserCreate):
-    """Create a new user with their main account"""
-    user_id = len(users_db) + 1 # ID auto-incremented => Take the last one of the user's list and add 1
-    hashed_password = hash_password(user.password) # Hash the password
+init_db()
 
-    #Create the user
-    user_dict = user.dict() #transfor user object to dictionary
-    user_dict["id"] = user_id
-    user_dict["password"] = hashed_password
-    users_db.append(user_dict) #add the user to the user's list
+    #<---------------- USERS ---------------->
+@router.post("/", response_model=models.User)
+def create_user_endpoint(user: UserCreate, db: Session = Depends(get_session)):
+    """Create a new user with their main account"""
+    # Check if email already exists
+    if db.query(models.User).filter(models.User.email == user.email).first():
+        raise HTTPException(status_code=400, detail="Email already registered")
+
+    hashed_password = hash_password(user.password)
+        #Create the user
+    db_user = models.User(name=user.name, email=user.email, password=hashed_password)
+    db.add(db_user)
+    db.commit()
+    db.refresh(db_user)
 
     # Create the main account for the user
-    account = AccountCreate(user_id=user_id, balance=100.0, main=True) #Create an account object and initialize it => balance, user_id, main account
-    account_dict = account.dict() #transfor account object to dictionary
-    account_dict["id"] = len(accounts_db) + 1 # ID auto-incremented => Take the last one of the account's list and add 1
-    account_dict["date"] = account.date or datetime.now().isoformat() #Add the current date if no date is provided
-    account_dict["closed"] = False
-    account_dict["status"] = False
-    account_dict["rib"] = generate_rib() #Generate a RIB for the main account
-    accounts_db.append(account_dict) #add the account to the account's list
+    main_account = models.Account(
+        user_id=db_user.id,
+        balance=100.0,
+        main=True,
+        closed=False,
+        status=False,
+        rib=f"FR{int(datetime.utcnow().timestamp())}{db_user.id}", # Generate RIB
+        date=datetime.utcnow()
+    )
+    db.add(main_account)
+    db.commit()
+    db.refresh(main_account)
 
-    return user_dict
+    return db_user
 
 @router.get("/", response_model=list[UserOut])
-def list_users_endpoint():
+def list_users(db: Session = Depends(get_session)):
     """List all users without their passwords"""
-    return users_db
+    return db.query(models.User).all()
 
 @router.get("/{user_id}", response_model=UserOut)
-def user_details(user_id: int):
+def user_details(user_id: int, db: Session = Depends(get_session)):
     """Get the user's information"""
-    user = next((u for u in users_db if u["id"] == user_id), None) #Look for the user in the list with his id
-
-    #If there's no user return an error message
+    user = db.query(models.User).filter(models.User.id == user_id).first()
     if not user:
-        return {"error": "User not found"}
-
-    user_filtered = {k: v for k, v in user.items() if k != "password"}# Exclude password from the response
-
-    return user_filtered
-
-
+        raise HTTPException(status_code=404, detail="User not found")
+    return user

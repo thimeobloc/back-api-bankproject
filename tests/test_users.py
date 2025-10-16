@@ -30,9 +30,9 @@ if __name__ == "__main__":
     user3 = post("/users/", {"name": "Charlie", "email": "charlie@example.com", "password": "pass789"})
 
     # Création d'un compte supplémentaire pour chaque utilisateur
-    account1 = post("/accounts/", {"user_id": 1, "date": datetime.now().isoformat()})
-    account2 = post("/accounts/", {"user_id": 2, "date": datetime.now().isoformat()})
-    account3 = post("/accounts/", {"user_id": 3, "date": datetime.now().isoformat()})
+    account1 = post("/accounts/1/")
+    account2 = post("/accounts/2/")
+    account3 = post("/accounts/3/")
 
     # Vérification des utilisateurs
     get("/users/")
