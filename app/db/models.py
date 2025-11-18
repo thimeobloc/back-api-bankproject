@@ -32,18 +32,10 @@ class Account(SQLModel, table=True):
     balance: float = Field(default=0.0)
     main: bool = Field(default=False)
     closed: bool = Field(default=False)
-    status: bool = Field(default=False)
     rib: str = Field(index=True)
-    date: Optional[datetime] = Field(sa_column=Column(
-        TIMESTAMP(timezone=True),
-        nullable=False,
-        server_default=text("CURRENT_TIMESTAMP")
-    ))
-
     deposits: List["Deposit"] = Relationship(back_populates="account")
     withdraws: List["Withdraw"] = Relationship(back_populates="account")
 
-    # ⚠️ Séparer les transferts envoyés et reçus
     transfers_sent: List["Transfer"] = Relationship(
         back_populates="from_account",
         sa_relationship_kwargs={"foreign_keys": "Transfer.from_account_id"}
@@ -52,6 +44,7 @@ class Account(SQLModel, table=True):
         back_populates="to_account",
         sa_relationship_kwargs={"foreign_keys": "Transfer.to_account_id"}
     )
+
 
     beneficiaries: List["Beneficiary"] = Relationship(back_populates="account")
 
@@ -88,15 +81,15 @@ class Transfer(SQLModel, table=True):
     from_account_id: int = Field(foreign_key="accounts.id")
     to_account_id: int = Field(foreign_key="accounts.id")
     amount: float = Field(default=0.0)
-    type: str = Field(default="transfer")
-    status: str = Field(default="transfer")
+    status: str = Field(default="pending")
+    type: str = Field(default="transfer", index=True)
     date: Optional[datetime] = Field(sa_column=Column(
         TIMESTAMP(timezone=True),
         nullable=False,
         server_default=text("CURRENT_TIMESTAMP")
     ))
 
-    # Lier correctement à Account avec foreign_keys explicites
+
     from_account: Optional[Account] = Relationship(
         back_populates="transfers_sent",
         sa_relationship_kwargs={"foreign_keys": "Transfer.from_account_id"}

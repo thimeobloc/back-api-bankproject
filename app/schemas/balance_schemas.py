@@ -4,12 +4,14 @@ from typing import Optional
 
 class depositCreate(BaseModel):
     """Schema for deposit creation"""
+    user_id:int
     account_id: int
     amount: float
     date: Optional[datetime] = None  
 
 class withdrawCreate(BaseModel):
     """Schema for withdraw creation"""
+    user_id: int
     account_id: int
     amount: float
     date: Optional[datetime] = None 
