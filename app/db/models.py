@@ -27,7 +27,7 @@ class Beneficiary(SQLModel, table=True):
     
 class Account(SQLModel, table=True):
     __tablename__ = "accounts"
-    id: int = Field(primary_key=True)
+    id: int | None = Field(default=None, primary_key=True)
     user_id: int = Field(index=True, foreign_key="users.id")
     balance: float = Field(default=0.0)
     main: bool = Field(default=False)
@@ -52,7 +52,7 @@ class Account(SQLModel, table=True):
 
 class Deposit(SQLModel, table=True):
     __tablename__ = "deposits"
-    id : int = Field(primary_key=True)
+    id : int | None = Field(default=None, primary_key=True)
     account_id : int = Field(index=True, foreign_key="accounts.id")
     amount : float = Field(default=0.0, index=True)
     type : str = Field(default="deposit", index=True)
@@ -65,7 +65,7 @@ class Deposit(SQLModel, table=True):
 
 class Withdraw(SQLModel, table=True):
     __tablename__ = "withdraws"
-    id : int = Field(primary_key=True)
+    id : int | None = Field(default=None, primary_key=True)
     account_id : int = Field(index=True, foreign_key="accounts.id")
     amount : float = Field(default=0.0, index=True)
     type : str = Field(default="withdraw", index=True)
@@ -78,7 +78,7 @@ class Withdraw(SQLModel, table=True):
 
 class Transfer(SQLModel, table=True):
     __tablename__ = "transfers"
-    id: int = Field(primary_key=True)
+    id: int | None = Field(default=None, primary_key=True)
     from_account_id: int = Field(foreign_key="accounts.id")
     to_account_id: int = Field(foreign_key="accounts.id")
     amount: float = Field(default=0.0)
@@ -100,4 +100,4 @@ class Transfer(SQLModel, table=True):
         sa_relationship_kwargs={"foreign_keys": "Transfer.to_account_id"}
     )
 
-    
+

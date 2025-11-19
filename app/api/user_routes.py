@@ -2,15 +2,14 @@ from fastapi import APIRouter, HTTPException, Depends, status
 from datetime import datetime
 from sqlmodel import Session
 from app.db import models
-from app.schemas.user_schemas import UserCreate, UserOut, LoginSchema
+from app.schemas.user_schemas import UserCreate, UserOut, LoginSchema, UserResponse
 from app.core.security import hash_password, verify_password, create_access_token
 from app.db.database import get_session
 import uuid
 
 router = APIRouter(prefix="/users", tags=["Users"])
 
-# ----------------- CREATE USER -----------------
-@router.post("/", response_model=UserOut)
+@router.post("/", response_model=UserResponse)
 def create_user_endpoint(user: UserCreate, db: Session = Depends(get_session)):
     existing_user = db.query(models.User).filter(models.User.email == user.email).first()
     if existing_user:
@@ -36,7 +35,14 @@ def create_user_endpoint(user: UserCreate, db: Session = Depends(get_session)):
     db.commit()
     db.refresh(main_account)
 
-    return UserOut.from_orm(db_user)
+    # Création du token
+    token = create_access_token({"sub": db_user.email, "user_id": db_user.id})
+
+    return {
+        "access_token": token,
+        "token_type": "bearer",
+        "user": UserOut.from_orm(db_user)
+    }
 
 # ----------------- LIST USERS -----------------
 @router.get("/", response_model=list[UserOut])
