@@ -32,6 +32,7 @@ class Account(SQLModel, table=True):
     balance: float = Field(default=0.0)
     main: bool = Field(default=False)
     closed: bool = Field(default=False)
+    status: bool = Field(default=False)
     rib: str = Field(index=True)
     deposits: List["Deposit"] = Relationship(back_populates="account")
     withdraws: List["Withdraw"] = Relationship(back_populates="account")

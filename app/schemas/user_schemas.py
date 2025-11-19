@@ -12,3 +12,4 @@ class UserCreate(UserBase):
 class UserOut(UserBase):
     """Schema for outputting user information without password"""
     id: int
+    model_config = {"from_attributes": True}
