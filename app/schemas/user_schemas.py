@@ -13,3 +13,8 @@ class UserOut(UserBase):
     """Schema for outputting user information without password"""
     id: int
     model_config = {"from_attributes": True}
+
+class LoginSchema(BaseModel):
+    """Schema for login"""
+    email: EmailStr
+    password: str

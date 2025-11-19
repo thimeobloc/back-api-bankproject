@@ -1,14 +1,15 @@
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException, Depends, status
 from datetime import datetime
 from sqlmodel import Session
 from app.db import models
-from app.schemas.user_schemas import UserCreate, UserOut
-from app.core.security import hash_password
+from app.schemas.user_schemas import UserCreate, UserOut, LoginSchema
+from app.core.security import hash_password, verify_password, create_access_token
 from app.db.database import get_session
 import uuid
 
 router = APIRouter(prefix="/users", tags=["Users"])
 
+# ----------------- CREATE USER -----------------
 @router.post("/", response_model=UserOut)
 def create_user_endpoint(user: UserCreate, db: Session = Depends(get_session)):
     """Create a new user with their main account"""
@@ -45,17 +46,32 @@ def create_user_endpoint(user: UserCreate, db: Session = Depends(get_session)):
     db.commit()
     db.refresh(main_account)
 
-    # Retourne les infos de l'utilisateur sans le mot de passe
     return UserOut.from_orm(db_user)
 
+# ----------------- LIST USERS -----------------
 @router.get("/", response_model=list[UserOut])
 def list_users(db: Session = Depends(get_session)):
     users = db.query(models.User).all()
     return [UserOut.from_orm(user) for user in users]
 
+# ----------------- USER DETAILS -----------------
 @router.get("/{user_id}", response_model=UserOut)
 def user_details(user_id: int, db: Session = Depends(get_session)):
     user = db.query(models.User).filter(models.User.id == user_id).first()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     return UserOut.from_orm(user)
+
+# ----------------- LOGIN USER -----------------
+@router.post("/login")
+def login(user: LoginSchema, db: Session = Depends(get_session)):
+    """Connexion d'un utilisateur et génération d'un JWT"""
+    user_in_db = db.query(models.User).filter(models.User.email == user.email).first()
+    if not user_in_db:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Email invalide")
+
+    if not verify_password(user.password, user_in_db.password):
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Mot de passe incorrect")
+
+    token = create_access_token({"sub": user_in_db.email, "user_id": user_in_db.id})
+    return {"access_token": token, "token_type": "bearer"}
