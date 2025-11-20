@@ -41,6 +41,14 @@ def view_accounts(db: Session = Depends(get_session), current_user: int = Depend
     ).order_by(models.Account.date.desc()).all()
     return accounts
 
+@router.get("/{account_id}", response_model=models.Account)
+def get_account(account_id: int, db: Session = Depends(get_session), current_user: int = Depends(get_current_user)):
+    """Récupérer un compte spécifique"""
+    account = db.query(models.Account).filter(models.Account.id == account_id).first()
+    if not account or account.user_id != current_user:
+        raise HTTPException(status_code=404, detail="Compte introuvable")
+    return account
+
 @router.post("/", response_model=models.Account)
 def create_account(
     account_data: AccountCreate,
