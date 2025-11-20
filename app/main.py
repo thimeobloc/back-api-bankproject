@@ -12,17 +12,20 @@ init_db()
 
 # ----------------- CORS -----------------
 origins = [
-    "http://localhost:5173",  # ton frontend React
+    "http://localhost:5173",
     "http://127.0.0.1:5173"
 ]
 
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,  # ou ["*"] pour tout autoriser en dev
+    allow_origins=origins,  # autorise seulement ton frontend
     allow_credentials=True,
-    allow_methods=["*"],     # GET, POST, PUT, DELETE…
-    allow_headers=["*"],
+    allow_methods=["*"],  # autorise GET, POST, PUT, DELETE...
+    allow_headers=["*"],  # autorise tous les headers
 )
+# ----------------------------------------
+
 app.include_router(api_router)
 
 @app.get("/")
