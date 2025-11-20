@@ -1,34 +1,34 @@
+from fastapi.security import OAuth2PasswordBearer
 from argon2 import PasswordHasher
-from argon2.exceptions import VerifyMismatchError
 import hashlib
 import jwt
 from datetime import datetime, timedelta
 
-SECRET_KEY = "super_secret_key"  # à mettre dans .env en vrai
+SECRET_KEY = "super_secret_key"
 ALGORITHM = "HS256"
+
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/users/login")
+
 ph = PasswordHasher()
 
-
-#function to hask password
+# hash password
 def hash_password(password: str) -> str:
     return hashlib.sha256(password.encode()).hexdigest()
 
-#function to verify password (check if it is hashed)
+# verify password
 def verify_password(password: str, hashed: str) -> bool:
     return hash_password(password) == hashed
 
-#function to crate the token
+# JWT generator
 def create_access_token(data: dict, expires_delta: timedelta | None = None):
-    to_encode = data.copy() #create a copy of the data
-    expire = datetime.utcnow() + (expires_delta or timedelta(hours=1)) #set expiration time
-    to_encode.update({"exp": expire}) #add expiration time to the data
-    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM) #create the token
+    to_encode = data.copy()
+    expire = datetime.utcnow() + (expires_delta or timedelta(hours=1))
+    to_encode.update({"exp": expire})
+    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
 
-#function to verify if amount is >=0
 def amount_verification(amount: float):
-    return amount>=0
+    return amount >= 0
 
-#function to verify if amount is < balance
 def enough_amount(amount: float, balance: float):
-    return amount<balance
+    return amount < balance

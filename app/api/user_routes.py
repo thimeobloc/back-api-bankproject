@@ -12,22 +12,12 @@ router = APIRouter(prefix="/users", tags=["Users"])
 # ----------------- CREATE USER -----------------
 @router.post("/", response_model=UserOut)
 def create_user_endpoint(user: UserCreate, db: Session = Depends(get_session)):
-    """Create a new user with their main account"""
-
-    # Vérification si l'email existe déjà
     existing_user = db.query(models.User).filter(models.User.email == user.email).first()
     if existing_user:
         raise HTTPException(status_code=400, detail="Email already registered")
 
-    # Hash du mot de passe
     hashed_password = hash_password(user.password)
-
-    # Création de l'utilisateur
-    db_user = models.User(
-        name=user.name,
-        email=user.email,
-        password=hashed_password
-    )
+    db_user = models.User(name=user.name, email=user.email, password=hashed_password)
     db.add(db_user)
     db.commit()
     db.refresh(db_user)
@@ -65,7 +55,6 @@ def user_details(user_id: int, db: Session = Depends(get_session)):
 # ----------------- LOGIN USER -----------------
 @router.post("/login")
 def login(user: LoginSchema, db: Session = Depends(get_session)):
-    """Connexion d'un utilisateur et génération d'un JWT"""
     user_in_db = db.query(models.User).filter(models.User.email == user.email).first()
     if not user_in_db:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Email invalide")
