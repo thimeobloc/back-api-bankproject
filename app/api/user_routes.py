@@ -12,22 +12,20 @@ router = APIRouter(prefix="/users", tags=["Users"])
 # ----------------- CREATE USER -----------------
 @router.post("/", response_model=UserOut)
 def create_user_endpoint(user: UserCreate, db: Session = Depends(get_session)):
-    # Vérifie si l'utilisateur existe déjà
     existing_user = db.query(models.User).filter(models.User.email == user.email).first()
     if existing_user:
         raise HTTPException(status_code=400, detail="Email already registered")
 
-    # Hash du mot de passe
     hashed_password = hash_password(user.password)
     db_user = models.User(name=user.name, email=user.email, password=hashed_password)
     db.add(db_user)
     db.commit()
     db.refresh(db_user)
 
-    # Création automatique du compte principal
+    # Création du compte principal
     main_account = models.Account(
         user_id=db_user.id,
-        balance=100.0,  # montant initial du compte principal
+        balance=100.0,
         main=True,
         closed=False,
         status=False,
@@ -64,6 +62,5 @@ def login(user: LoginSchema, db: Session = Depends(get_session)):
     if not verify_password(user.password, user_in_db.password):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Mot de passe incorrect")
 
-    # Création du token JWT
     token = create_access_token({"sub": user_in_db.email, "user_id": user_in_db.id})
     return {"access_token": token, "token_type": "bearer"}
