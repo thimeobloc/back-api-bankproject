@@ -21,6 +21,9 @@ def create_user_endpoint(user: UserCreate, db: Session = Depends(get_session)):
     db.commit()
     db.refresh(db_user)
 
+    # Création du token
+    token = create_access_token({"sub": db_user.email, "user_id": db_user.id})
+
     # Création du compte principal
     main_account = models.Account(
         user_id=db_user.id,
@@ -29,16 +32,14 @@ def create_user_endpoint(user: UserCreate, db: Session = Depends(get_session)):
         closed=False,
         status=False,
         rib=f"FR{int(datetime.utcnow().timestamp())}{db_user.id}{uuid.uuid4().hex[:6]}",
-        date=datetime.utcnow()
+        date=datetime.utcnow(),
     )
     db.add(main_account)
     db.commit()
     db.refresh(main_account)
 
-    # Création du token
-    token = create_access_token({"sub": db_user.email, "user_id": db_user.id})
-
     return {
+        "user_id":db_user.id,
         "access_token": token,
         "token_type": "bearer",
         "user": UserOut.from_orm(db_user)
