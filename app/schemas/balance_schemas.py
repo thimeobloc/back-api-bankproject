@@ -28,3 +28,8 @@ class transferResponse(transferCreate):
     id: int
     status: str
     expiry: Optional[datetime] = None
+
+class TransferByRIB(BaseModel):
+    from_account_id: int
+    to_rib: str
+    amount: float

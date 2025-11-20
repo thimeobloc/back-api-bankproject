@@ -3,7 +3,7 @@ from datetime import datetime
 from time import sleep
 from sqlmodel import Session, select
 from app.db import models
-from app.schemas.balance_schemas import depositCreate, withdrawCreate, transferCreate
+from app.schemas.balance_schemas import *
 from app.db.database import get_session
 from app.core.security import amount_verification, enough_amount, oauth2_scheme, SECRET_KEY, ALGORITHM
 from jose import jwt, JWTError
@@ -117,7 +117,6 @@ def complete_transfer_task(db: Session, transfer_id: int):
         return
     recipient.balance += transfer.amount
     transfer.status = "completed"
-    transfer.completed_at = datetime.utcnow()
     db.add_all([recipient, transfer])
     db.commit()
 
@@ -126,9 +125,10 @@ def delayed_complete_transfer(transfer_id: int, db: Session, delay: int = 30):
     complete_transfer_task(db, transfer_id)
 
 @router.post("/transfer")
-def transfer_endpoint(balance: transferCreate, background_tasks: BackgroundTasks, current_user: int = Depends(get_current_user), db: Session = Depends(get_session)):
+def transfer_endpoint(balance: TransferByRIB, background_tasks: BackgroundTasks, current_user: int = Depends(get_current_user), db: Session = Depends(get_session)):
+    recipient = db.exec(select(models.Account).where(models.Account.rib == balance.to_rib)).first()
+    print(recipient)
     sender = db.get(models.Account, balance.from_account_id)
-    recipient = db.get(models.Account, balance.to_account_id)
     
     if not sender or not recipient:
         raise HTTPException(status_code=404, detail="Compte non trouvé")
@@ -142,15 +142,6 @@ def transfer_endpoint(balance: transferCreate, background_tasks: BackgroundTasks
         raise HTTPException(status_code=400, detail="Montant invalide")
     if not enough_amount(balance.amount, sender.balance):
         raise HTTPException(status_code=400, detail="Solde insuffisant")
-
-    # ---------------- Vérification bénéficiaire ----------------
-    beneficiary = db.exec(
-        select(models.Beneficiary)
-        .where(models.Beneficiary.account_id == sender.id)
-        .where(models.Beneficiary.rib == recipient.rib)
-    ).first()
-    if not beneficiary:
-        raise HTTPException(status_code=403, detail="Destinataire non autorisé (ajoutez-le comme bénéficiaire d'abord)")
 
     sender.balance -= balance.amount
     transfer = models.Transfer(
