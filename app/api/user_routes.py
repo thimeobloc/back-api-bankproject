@@ -10,11 +10,14 @@ import uuid
 router = APIRouter(prefix="/users", tags=["Users"])
 
 # ----------------- CREATE USER -----------------
-@router.post("/", response_model=UserOut)
+@router.post("/", response_model=dict)
 def create_user_endpoint(user: UserCreate, db: Session = Depends(get_session)):
     existing_user = db.query(models.User).filter(models.User.email == user.email).first()
+
+
     if existing_user:
-        raise HTTPException(status_code=400, detail="Email already registered")
+        raise HTTPException(status_code=400, detail="Email deja existant")
+
 
     hashed_password = hash_password(user.password)
     db_user = models.User(name=user.name, email=user.email, password=hashed_password)
@@ -22,7 +25,6 @@ def create_user_endpoint(user: UserCreate, db: Session = Depends(get_session)):
     db.commit()
     db.refresh(db_user)
 
-    # Création du compte principal
     main_account = models.Account(
         user_id=db_user.id,
         balance=100.0,
@@ -36,7 +38,13 @@ def create_user_endpoint(user: UserCreate, db: Session = Depends(get_session)):
     db.commit()
     db.refresh(main_account)
 
-    return UserOut.from_orm(db_user)
+    access_token = create_access_token({"user_id": db_user.id})
+
+    return {
+        "access_token": access_token,
+        "token_type": "bearer",
+        "user": UserOut.from_orm(db_user)
+    }
 
 # ----------------- LIST USERS -----------------
 @router.get("/", response_model=list[UserOut])
