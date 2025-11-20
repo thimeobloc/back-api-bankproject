@@ -1,11 +1,12 @@
 from fastapi import APIRouter, HTTPException, Depends
 from datetime import datetime
-from sqlmodel import Session, select
+from sqlmodel import Session
 from app.db import models
 from app.db.database import get_session, init_db
 from app.core.security import oauth2_scheme, SECRET_KEY, ALGORITHM
 from jose import jwt, JWTError
 import uuid
+from app.schemas.account_schemas import AccountCreate, ACCOUNT_TYPES
 
 router = APIRouter(prefix="/accounts", tags=["Accounts"])
 init_db()
@@ -31,7 +32,32 @@ def list_accounts(current_user: int = Depends(get_current_user), db: Session = D
     return db.query(models.Account).filter(models.Account.user_id == current_user).all()
 
 @router.post("/", response_model=models.Account)
-def create_account(db: Session = Depends(get_session), current_user: int = Depends(get_current_user)):
+def create_account(
+    account_data: AccountCreate,
+    db: Session = Depends(get_session), 
+    current_user: int = Depends(get_current_user)
+):
+    # Vérification du type de compte autorisé
+    if account_data.account_type not in ACCOUNT_TYPES:
+        raise HTTPException(
+            status_code=400, 
+            detail=f"Type de compte invalide. Types autorisés : {ACCOUNT_TYPES}"
+        )
+    
+    # Vérifier unicité : l'utilisateur ne doit pas déjà avoir ce type
+    existing_account = db.query(models.Account).filter(
+        models.Account.user_id == current_user,
+        models.Account.type == account_data.account_type,
+        models.Account.closed == False
+    ).first()
+    
+    if existing_account:
+        raise HTTPException(
+            status_code=400, 
+            detail=f"Vous avez déjà un compte de type '{account_data.account_type}'"
+        )
+
+    # Création du nouveau compte
     new_account = models.Account(
         user_id=current_user,
         balance=0.0,
@@ -39,7 +65,8 @@ def create_account(db: Session = Depends(get_session), current_user: int = Depen
         closed=False,
         status=False,
         rib=generate_rib(current_user),
-        date=datetime.utcnow()
+        date=datetime.utcnow(),
+        type=account_data.account_type
     )
     db.add(new_account)
     db.commit()
