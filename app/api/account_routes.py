@@ -106,16 +106,38 @@ def close_account(account_id: int, db: Session = Depends(get_session), current_u
 
 # ----------------- BENEFICIARIES -----------------
 @router.post("/beneficiary/{account_id}/{rib}/{name}", response_model=models.Beneficiary)
-def add_beneficiary(account_id: int, rib: str, name: str, db: Session = Depends(get_session), current_user: int = Depends(get_current_user)):
+def add_beneficiary(
+    account_id: int,
+    rib: str,
+    name: str,
+    db: Session = Depends(get_session),
+    current_user: int = Depends(get_current_user)
+):
+    # Vérifier que le compte existe et appartient à l'utilisateur courant
     account = db.query(models.Account).filter(models.Account.id == account_id).first()
     if not account or account.user_id != current_user:
         raise HTTPException(status_code=400, detail="Compte introuvable ou non autorisé")
+
+    # Empêcher d'ajouter son propre RIB
     if account.rib == rib:
         raise HTTPException(status_code=400, detail="Impossible d'ajouter son propre RIB")
-    existing = db.query(models.Beneficiary).filter(models.Beneficiary.account_id == account_id, models.Beneficiary.rib == rib).first()
+
+    # Vérifier si le bénéficiaire existe déjà
+    existing = db.query(models.Beneficiary).filter(
+        models.Beneficiary.account_id == account_id,
+        models.Beneficiary.rib == rib
+    ).first()
     if existing:
         raise HTTPException(status_code=400, detail="Bénéficiaire déjà existant")
-    beneficiary = models.Beneficiary(account_id=account_id, name=name, rib=rib, user_id=current_user)
+
+    # Créer le bénéficiaire avec account_id
+    beneficiary = models.Beneficiary(
+        name=name,
+        rib=rib,
+        user_id=current_user,
+        account_id=account_id  # <=== important !
+    )
+
     db.add(beneficiary)
     db.commit()
     db.refresh(beneficiary)
@@ -146,3 +168,10 @@ def get_rib(account_id: int, db: Session = Depends(get_session), current_user: i
     if not account or account.user_id != current_user:
         raise HTTPException(status_code=400, detail="Compte introuvable ou non autorisé")
     return account.rib
+
+@router.get("/accounts/{account_id}/beneficiaries", response_model=List[BeneficiaryOut])
+def get_beneficiaries(account_id: int, db: Session = Depends(get_session)):
+    account = db.query(models.Account).filter(models.Account.id == account_id).first()
+    if not account:
+        raise HTTPException(status_code=404, detail="Compte introuvable")
+    return account.beneficiaries
