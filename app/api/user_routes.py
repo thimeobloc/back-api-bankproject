@@ -13,8 +13,11 @@ router = APIRouter(prefix="/users", tags=["Users"])
 @router.post("/", response_model=dict)
 def create_user_endpoint(user: UserCreate, db: Session = Depends(get_session)):
     existing_user = db.query(models.User).filter(models.User.email == user.email).first()
+
+
     if existing_user:
         raise HTTPException(status_code=400, detail="Email deja existant")
+
 
     hashed_password = hash_password(user.password)
     db_user = models.User(name=user.name, email=user.email, password=hashed_password)

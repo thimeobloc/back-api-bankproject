@@ -34,6 +34,8 @@ class Account(SQLModel, table=True):
     closed: bool = Field(default=False)
     status: bool = Field(default=False)
     rib: str = Field(index=True)
+    type: str = Field(default="Compte courant")  # <-- Champ type de compte
+
     deposits: List["Deposit"] = Relationship(back_populates="account")
     withdraws: List["Withdraw"] = Relationship(back_populates="account")
 
@@ -45,7 +47,6 @@ class Account(SQLModel, table=True):
         back_populates="to_account",
         sa_relationship_kwargs={"foreign_keys": "Transfer.to_account_id"}
     )
-
 
     beneficiaries: List["Beneficiary"] = Relationship(back_populates="account")
 

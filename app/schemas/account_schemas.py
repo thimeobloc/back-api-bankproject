@@ -1,8 +1,16 @@
 from pydantic import BaseModel, Field
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 from datetime import datetime
-from typing import Optional
 
+# Liste des types de comptes épargne autorisés
+ACCOUNT_TYPES = [
+    "Livret A",
+    "LDDS",
+    "Livret Jeune",
+    "PEL",
+    "Compte à terme",
+    "Assurance-vie"
+]
 
 class AccountBase(BaseModel):
     """Base schema for account"""
@@ -17,10 +25,11 @@ class AccountBase(BaseModel):
     closed: bool = False
     status: bool = False
     rib: str = ""
+    type: str = "Compte courant"
 
-class AccountCreate(AccountBase):
+class AccountCreate(BaseModel):
     """Schema for creating an account"""
-    pass  
+    account_type: str  # Champ pour le type de compte choisi
 
 class AccountOut(AccountBase):
     """Schema for outputting account information"""
@@ -32,6 +41,3 @@ class beneficiary(BaseModel):
     name: str
     user_id: int
     date: Optional[datetime] = None 
-
-
-
