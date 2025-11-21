@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.api.router import router as api_router
-from app.db.database import engine, init_db
+from .api.router import router as api_router
+from .db.database import engine, init_db
 
 # Import models pour créer les tables
 from app.db import models
