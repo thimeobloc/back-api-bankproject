@@ -6,7 +6,7 @@ from app.db.database import get_session, init_db
 from app.core.security import oauth2_scheme, SECRET_KEY, ALGORITHM
 from jose import jwt, JWTError
 import uuid
-from app.schemas.account_schemas import AccountCreate, ACCOUNT_TYPES
+from app.schemas.account_schemas import *
 
 router = APIRouter(prefix="/accounts", tags=["Accounts"])
 init_db()
@@ -41,37 +41,27 @@ def view_accounts(db: Session = Depends(get_session), current_user: int = Depend
     ).order_by(models.Account.date.desc()).all()
     return accounts
 
-@router.get("/{account_id}", response_model=models.Account)
-def get_account(account_id: int, db: Session = Depends(get_session), current_user: int = Depends(get_current_user)):
-    """Récupérer un compte spécifique"""
-    account = db.query(models.Account).filter(models.Account.id == account_id).first()
-    if not account or account.user_id != current_user:
-        raise HTTPException(status_code=404, detail="Compte introuvable")
-    return account
-
 @router.post("/", response_model=models.Account)
-def create_account(
-    account_data: AccountCreate,
-    db: Session = Depends(get_session), 
+def create_account(account_data: AccountCreate,
+    db: Session = Depends(get_session),
     current_user: int = Depends(get_current_user)
 ):
-    """Créer un nouveau compte (les comptes fermés ne bloquent pas)"""
     if account_data.account_type not in ACCOUNT_TYPES:
         raise HTTPException(
-            status_code=400, 
+            status_code=400,
             detail=f"Type de compte invalide. Types autorisés : {ACCOUNT_TYPES}"
         )
-    
+
     # Vérifier uniquement les comptes actifs du même type
     existing_active_account = db.query(models.Account).filter(
         models.Account.user_id == current_user,
         models.Account.type == account_data.account_type,
         models.Account.closed == False
     ).first()
-    
+
     if existing_active_account:
         raise HTTPException(
-            status_code=400, 
+            status_code=400,
             detail=f"Vous avez déjà un compte actif de type '{account_data.account_type}'"
         )
 
@@ -115,17 +105,34 @@ def close_account(account_id: int, db: Session = Depends(get_session), current_u
     return {"detail": "Compte fermé", "main_account_balance": main_account.balance}
 
 # ----------------- BENEFICIARIES -----------------
-@router.post("/beneficiary/{account_id}/{rib}/{name}", response_model=models.Beneficiary)
-def add_beneficiary(account_id: int, rib: str, name: str, db: Session = Depends(get_session), current_user: int = Depends(get_current_user)):
+@router.post("/beneficiary/{account_id}", response_model=models.Beneficiary)
+def add_beneficiary(account_id: int,data: BeneficiaryCreate, db: Session = Depends(get_session),current_user: int = Depends(get_current_user)):
     account = db.query(models.Account).filter(models.Account.id == account_id).first()
+    rib = data.rib.replace(" ", "")
+    name = data.name
+
     if not account or account.user_id != current_user:
         raise HTTPException(status_code=400, detail="Compte introuvable ou non autorisé")
+
     if account.rib == rib:
         raise HTTPException(status_code=400, detail="Impossible d'ajouter son propre RIB")
-    existing = db.query(models.Beneficiary).filter(models.Beneficiary.account_id == account_id, models.Beneficiary.rib == rib).first()
+
+    # Vérifier si le même utilisateur a déjà ajouté ce RIB sur ce compte
+    existing = db.query(models.Beneficiary).filter(
+        models.Beneficiary.account_id == account_id,
+        models.Beneficiary.rib == rib,
+        models.Beneficiary.user_id == current_user
+    ).first()
+
     if existing:
-        raise HTTPException(status_code=400, detail="Bénéficiaire déjà existant")
-    beneficiary = models.Beneficiary(account_id=account_id, name=name, rib=rib, user_id=current_user)
+        raise HTTPException(status_code=400, detail="Vous avez déjà ajouté ce RIB")
+
+    beneficiary = models.Beneficiary(
+        account_id=account_id,
+        name=name,
+        rib=rib,
+        user_id=current_user
+    )
     db.add(beneficiary)
     db.commit()
     db.refresh(beneficiary)
@@ -156,3 +163,4 @@ def get_rib(account_id: int, db: Session = Depends(get_session), current_user: i
     if not account or account.user_id != current_user:
         raise HTTPException(status_code=400, detail="Compte introuvable ou non autorisé")
     return account.rib
+

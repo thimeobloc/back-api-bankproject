@@ -5,16 +5,11 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="69bfb63d-c1a2-423d-a7c2-739dce80df73" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/app/templates/releve.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/api/account_routes.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/api/account_routes.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/api/balance_routes.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/api/balance_routes.py" afterDir="false" />
-<<<<<<< HEAD
       <change beforePath="$PROJECT_DIR$/app/schemas/account_schemas.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/schemas/account_schemas.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/schemas/balance_schemas.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/schemas/balance_schemas.py" afterDir="false" />
-=======
-      <change beforePath="$PROJECT_DIR$/app/db/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/db/models.py" afterDir="false" />
->>>>>>> 056ce07d06a63afb323695972df5868ec367bb5f
       <change beforePath="$PROJECT_DIR$/database.db" beforeDir="false" afterPath="$PROJECT_DIR$/database.db" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -43,7 +38,6 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-<<<<<<< HEAD
   <component name="PropertiesComponent">{
   &quot;keyToString&quot;: {
     &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
@@ -61,25 +55,6 @@
     &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
     &quot;settings.editor.selected.configurable&quot;: &quot;com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable&quot;,
     &quot;to.speed.mode.migration.done&quot;: &quot;true&quot;
-=======
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "ModuleVcsDetector.initialDetectionPerformed": "true",
-    "RunOnceActivity.OpenProjectViewOnStart": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "git-widget-placeholder": "Merging main",
-    "ignore.virus.scanning.warn.message": "true",
-    "junie.onboarding.icon.badge.shown": "true",
-    "last_opened_file_path": "C:/Users/eband",
-    "node.js.detected.package.eslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "settings.editor.selected.configurable": "com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable",
-    "to.speed.mode.migration.done": "true"
->>>>>>> 056ce07d06a63afb323695972df5868ec367bb5f
   }
 }</component>
   <component name="RecentsManager">
@@ -109,7 +84,6 @@
       <updated>1760364626021</updated>
       <workItem from="1760364627295" duration="676000" />
       <workItem from="1760425272341" duration="10554000" />
-      <workItem from="1763712133724" duration="413000" />
     </task>
     <servers />
   </component>
