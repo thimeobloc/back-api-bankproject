@@ -29,7 +29,25 @@ def generate_rib(user_id: int) -> str:
 # ----------------- ACCOUNTS -----------------
 @router.get("/", response_model=list[models.Account])
 def list_accounts(current_user: int = Depends(get_current_user), db: Session = Depends(get_session)):
+    """Liste tous les comptes de l'utilisateur"""
     return db.query(models.Account).filter(models.Account.user_id == current_user).all()
+
+@router.get("/myaccounts/", response_model=list[models.Account])
+def view_accounts(db: Session = Depends(get_session), current_user: int = Depends(get_current_user)):
+    """Liste uniquement les comptes actifs (non fermés)"""
+    accounts = db.query(models.Account).filter(
+        models.Account.user_id == current_user,
+        models.Account.closed == False
+    ).order_by(models.Account.date.desc()).all()
+    return accounts
+
+@router.get("/{account_id}", response_model=models.Account)
+def get_account(account_id: int, db: Session = Depends(get_session), current_user: int = Depends(get_current_user)):
+    """Récupérer un compte spécifique"""
+    account = db.query(models.Account).filter(models.Account.id == account_id).first()
+    if not account or account.user_id != current_user:
+        raise HTTPException(status_code=404, detail="Compte introuvable")
+    return account
 
 @router.post("/", response_model=models.Account)
 def create_account(
@@ -37,27 +55,26 @@ def create_account(
     db: Session = Depends(get_session), 
     current_user: int = Depends(get_current_user)
 ):
-    # Vérification du type de compte autorisé
+    """Créer un nouveau compte (les comptes fermés ne bloquent pas)"""
     if account_data.account_type not in ACCOUNT_TYPES:
         raise HTTPException(
             status_code=400, 
             detail=f"Type de compte invalide. Types autorisés : {ACCOUNT_TYPES}"
         )
     
-    # Vérifier unicité : l'utilisateur ne doit pas déjà avoir ce type
-    existing_account = db.query(models.Account).filter(
+    # Vérifier uniquement les comptes actifs du même type
+    existing_active_account = db.query(models.Account).filter(
         models.Account.user_id == current_user,
         models.Account.type == account_data.account_type,
         models.Account.closed == False
     ).first()
     
-    if existing_account:
+    if existing_active_account:
         raise HTTPException(
             status_code=400, 
-            detail=f"Vous avez déjà un compte de type '{account_data.account_type}'"
+            detail=f"Vous avez déjà un compte actif de type '{account_data.account_type}'"
         )
 
-    # Création du nouveau compte
     new_account = models.Account(
         user_id=current_user,
         balance=0.0,
@@ -73,16 +90,9 @@ def create_account(
     db.refresh(new_account)
     return new_account
 
-@router.get("/myaccounts/", response_model=list[models.Account])
-def view_accounts(db: Session = Depends(get_session), current_user: int = Depends(get_current_user)):
-    accounts = db.query(models.Account).filter(
-        models.Account.user_id == current_user,
-        models.Account.closed == False
-    ).order_by(models.Account.date.desc()).all()
-    return accounts
-
 @router.post("/close/{account_id}")
 def close_account(account_id: int, db: Session = Depends(get_session), current_user: int = Depends(get_current_user)):
+    """Clôturer un compte et transférer le solde vers le compte principal"""
     account = db.query(models.Account).filter(models.Account.id == account_id).first()
     if not account or account.user_id != current_user:
         raise HTTPException(status_code=400, detail="Compte introuvable ou non autorisé")
