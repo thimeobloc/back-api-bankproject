@@ -24,8 +24,7 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-          # Installer les dépendances de dev pour les tests
-          pip install pytest pytest-cov
+          pip install pytest pytest-cov httpx
 
       - name: Build check
         run: |

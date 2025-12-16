@@ -15,4 +15,4 @@ uvicorn==0.37.0
 pytest
 pytest-cov
 pydantic[email]==2.12.1
-
+httpx
