@@ -3,17 +3,17 @@ name: CI Backend - Python
 on:
   push:
     branches:
-      - main     # Run CI on push to main branch
-      - dev      # Run CI on push to dev branch
-  pull_request:  # Run CI on pull requests
+      - main
+      - dev
+  pull_request:
 
 jobs:
   build:
-    runs-on: ubuntu-latest   # Use Ubuntu virtual machine
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4   # Get code from repository
+        uses: actions/checkout@v4
 
       - name: Setup Python
         uses: actions/setup-python@v5
@@ -24,7 +24,18 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
+          # Installer les dépendances de dev pour les tests
+          pip install pytest pytest-cov
 
       - name: Build check
         run: |
           python -m compileall app
+
+      - name: Set PYTHONPATH
+        run: echo "PYTHONPATH=${{ github.workspace }}" >> $GITHUB_ENV
+
+      - name: Run unit tests with coverage
+        env:
+          DATABASE_URL: "sqlite:///:memory:"
+        run: |
+          pytest --maxfail=1 --disable-warnings -q --cov=app --cov-report=xml
