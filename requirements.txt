@@ -22,12 +22,12 @@ colorama==0.4.6
 
 # Database
 sqlmodel==0.0.8
-sqlalchemy==2.0.21
-databases==0.6.2  # corrigé
+sqlalchemy==1.4.41
+databases==0.6.2
 
 # Security
 python-jose==3.3.0
-argon2-cffi==23.1.0  # corrigé
+argon2-cffi==23.1.0
 email-validator==2.3.0
 dnspython==2.8.0
 
