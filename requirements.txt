@@ -23,7 +23,7 @@ colorama==0.4.6
 # Database
 sqlmodel==0.0.8
 sqlalchemy==2.0.21
-databases==0.6.3
+databases==0.6.2  # corrigé
 
 # Security
 python-jose==3.3.0
