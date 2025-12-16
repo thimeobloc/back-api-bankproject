@@ -23,11 +23,11 @@ app.add_middleware(
     allow_credentials=True,
     allow_methods=["*"],  # autorise GET, POST, PUT, DELETE...
     allow_headers=["*"],  # autorise tous les headers
-
+)
 # ----------------------------------------
 
 app.include_router(api_router)
 
 @app.get("/")
-def root()
+def root():
     return {"message": "Bank API is running"}
