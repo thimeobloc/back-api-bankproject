@@ -3,17 +3,17 @@ name: CI Backend - Python
 on:
   push:
     branches:
-      - main
-      - develop
-  pull_request:
+      - main     # Run CI on push to main branch
+      - dev      # Run CI on push to dev branch
+  pull_request:  # Run CI on pull requests
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest   # Use Ubuntu virtual machine
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v4   # Get code from repository
 
       - name: Setup Python
         uses: actions/setup-python@v5
