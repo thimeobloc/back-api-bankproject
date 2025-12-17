@@ -3,7 +3,7 @@ from datetime import datetime, timezone
 from time import sleep
 from sqlmodel import Session, select
 from app.db import models
-from app.schemas.balance_schemas import *
+from app.schemas.balance_schemas import DepositCreate, WithdrawCreate, TransferByRIB
 from app.db.database import get_session
 from app.core.security import amount_verification, enough_amount, oauth2_scheme, SECRET_KEY, ALGORITHM
 from jose import jwt, JWTError
@@ -39,7 +39,7 @@ def get_current_user(token: str = Depends(oauth2_scheme)):
 # Deposits
 # ---------------------------
 @router.post("/deposit")
-def deposit_endpoint(balance: depositCreate, current_user: int = Depends(get_current_user), db: Session = Depends(get_session)):
+def deposit_endpoint(balance: DepositCreate, current_user: int = Depends(get_current_user), db: Session = Depends(get_session)):
     if balance.user_id != current_user:
         raise HTTPException(status_code=403, detail=ACCESS_DENIED)
     
@@ -86,7 +86,7 @@ def list_deposits(account_id: int, current_user: int = Depends(get_current_user)
 # Withdraws
 # ---------------------------
 @router.post("/withdraw")
-def withdraw_endpoint(balance: withdrawCreate, current_user: int = Depends(get_current_user), db: Session = Depends(get_session)):
+def withdraw_endpoint(balance: WithdrawCreate, current_user: int = Depends(get_current_user), db: Session = Depends(get_session)):
     if balance.user_id != current_user:
         raise HTTPException(status_code=403, detail=ACCESS_DENIED)
     
