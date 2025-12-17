@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException, Depends
-from datetime import datetime
+from datetime import datetime, timezone
 from sqlmodel import Session
 from app.db import models
 from app.db.database import get_session, init_db
@@ -22,7 +22,7 @@ def get_current_user(token: str = Depends(oauth2_scheme)):
         raise HTTPException(status_code=401, detail="Invalid token")
 
 def generate_rib(user_id: int) -> str:
-    return f"FR{int(datetime.utcnow().timestamp())}{user_id}{uuid.uuid4().hex[:6]}"
+    return f"FR{int(datetime.now(timezone.utc).timestamp())}{user_id}{uuid.uuid4().hex[:6]}"
 
 @router.get("/", response_model=list[models.Account])
 def list_accounts(current_user: int = Depends(get_current_user), db: Session = Depends(get_session)):
@@ -64,7 +64,7 @@ def create_account(account_data: AccountCreate, db: Session = Depends(get_sessio
         closed=False,
         status=False,
         rib=generate_rib(current_user),
-        date=datetime.utcnow(),
+        date=datetime.now(timezone.utc),
         type=account_data.account_type
     )
     db.add(new_account)
