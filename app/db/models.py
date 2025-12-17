@@ -2,6 +2,11 @@ from datetime import datetime
 from typing import Optional, List
 from sqlmodel import SQLModel, Field, Column, TIMESTAMP, text, Relationship
 
+# ---------------------------
+# Constants
+# ---------------------------
+ACCOUNTS_TABLE_ID = "accounts.id"
+
 class User(SQLModel, table=True):
     __tablename__ = "users"
     id: Optional[int] = Field(default=None, primary_key=True)
@@ -16,7 +21,7 @@ class Beneficiary(SQLModel, table=True):
     rib: str = Field(index=True)
     name: str = Field(index=True)
     user_id: int = Field(index=True, foreign_key="users.id")
-    account_id: int = Field(foreign_key="accounts.id")
+    account_id: int = Field(foreign_key=ACCOUNTS_TABLE_ID)
     user: Optional[User] = Relationship(back_populates="beneficiaries")
     account: Optional["Account"] = Relationship(back_populates="beneficiaries")
 
@@ -52,7 +57,7 @@ class Account(SQLModel, table=True):
 class Deposit(SQLModel, table=True):
     __tablename__ = "deposits"
     id: int = Field(primary_key=True)
-    account_id: int = Field(index=True, foreign_key="accounts.id")
+    account_id: int = Field(index=True, foreign_key=ACCOUNTS_TABLE_ID)
     amount: float = Field(default=0.0, index=True)
     type: str = Field(default="deposit", index=True)
     date: Optional[datetime] = Field(
@@ -63,7 +68,7 @@ class Deposit(SQLModel, table=True):
 class Withdraw(SQLModel, table=True):
     __tablename__ = "withdraws"
     id: int = Field(primary_key=True)
-    account_id: int = Field(index=True, foreign_key="accounts.id")
+    account_id: int = Field(index=True, foreign_key=ACCOUNTS_TABLE_ID)
     amount: float = Field(default=0.0, index=True)
     type: str = Field(default="withdraw", index=True)
     date: Optional[datetime] = Field(
@@ -74,8 +79,8 @@ class Withdraw(SQLModel, table=True):
 class Transfer(SQLModel, table=True):
     __tablename__ = "transfers"
     id: int = Field(primary_key=True)
-    from_account_id: int = Field(foreign_key="accounts.id")
-    to_account_id: int = Field(foreign_key="accounts.id")
+    from_account_id: int = Field(foreign_key=ACCOUNTS_TABLE_ID)
+    to_account_id: int = Field(foreign_key=ACCOUNTS_TABLE_ID)
     amount: float = Field(default=0.0)
     status: str = Field(default="pending")
     type: str = Field(default="transfer", index=True)
