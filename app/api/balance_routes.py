@@ -10,7 +10,21 @@ from jose import jwt, JWTError
 
 router = APIRouter(prefix="/balances", tags=["Balances"])
 
-# ----------------- JWT Helper -----------------
+# ---------------------------
+# Constants
+# ---------------------------
+ACCESS_DENIED = "Accès refusé"
+ACCOUNT_NOT_FOUND = "Compte non trouvé"
+NOT_YOUR_ACCOUNT = "Ce n'est pas votre compte"
+ACCOUNT_CLOSED = "Compte fermé"
+INVALID_AMOUNT = "Montant invalide"
+INSUFFICIENT_BALANCE = "Solde insuffisant"
+SAME_ACCOUNT_TRANSFER = "Transfert impossible (même compte)"
+TRANSFER_NOT_FOUND = "Transfert non trouvé ou déjà traité"
+
+# ---------------------------
+# JWT Helper
+# ---------------------------
 def get_current_user(token: str = Depends(oauth2_scheme)):
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
@@ -21,21 +35,23 @@ def get_current_user(token: str = Depends(oauth2_scheme)):
     except JWTError:
         raise HTTPException(status_code=401, detail="Invalid token")
 
-# ---------------- DEPOSITS ----------------
+# ---------------------------
+# Deposits
+# ---------------------------
 @router.post("/deposit")
 def deposit_endpoint(balance: depositCreate, current_user: int = Depends(get_current_user), db: Session = Depends(get_session)):
     if balance.user_id != current_user:
-        raise HTTPException(status_code=403, detail="Accès refusé")
+        raise HTTPException(status_code=403, detail=ACCESS_DENIED)
     
     account = db.get(models.Account, balance.account_id)
     if not account:
-        raise HTTPException(status_code=404, detail="Compte non trouvé")
+        raise HTTPException(status_code=404, detail=ACCOUNT_NOT_FOUND)
     if account.user_id != current_user:
-        raise HTTPException(status_code=403, detail="Ce n'est pas votre compte")
+        raise HTTPException(status_code=403, detail=NOT_YOUR_ACCOUNT)
     if account.closed:
-        raise HTTPException(status_code=400, detail="Compte fermé")
+        raise HTTPException(status_code=400, detail=ACCOUNT_CLOSED)
     if not amount_verification(balance.amount):
-        raise HTTPException(status_code=400, detail="Montant invalide")
+        raise HTTPException(status_code=400, detail=INVALID_AMOUNT)
     
     account.balance += balance.amount
     deposit = models.Deposit(
@@ -55,30 +71,32 @@ def deposit_endpoint(balance: depositCreate, current_user: int = Depends(get_cur
 def list_deposits(account_id: int, current_user: int = Depends(get_current_user), db: Session = Depends(get_session)):
     account = db.get(models.Account, account_id)
     if not account or account.user_id != current_user:
-        raise HTTPException(status_code=403, detail="Accès refusé")
+        raise HTTPException(status_code=403, detail=ACCESS_DENIED)
     if account.closed:
-        raise HTTPException(status_code=400, detail="Compte fermé")
+        raise HTTPException(status_code=400, detail=ACCOUNT_CLOSED)
 
     deposits = db.exec(select(models.Deposit).where(models.Deposit.account_id == account_id).order_by(models.Deposit.date.desc())).all()
     return deposits
 
-# ---------------- WITHDRAWS ----------------
+# ---------------------------
+# Withdraws
+# ---------------------------
 @router.post("/withdraw")
 def withdraw_endpoint(balance: withdrawCreate, current_user: int = Depends(get_current_user), db: Session = Depends(get_session)):
     if balance.user_id != current_user:
-        raise HTTPException(status_code=403, detail="Accès refusé")
+        raise HTTPException(status_code=403, detail=ACCESS_DENIED)
     
     account = db.get(models.Account, balance.account_id)
     if not account:
-        raise HTTPException(status_code=404, detail="Compte non trouvé")
+        raise HTTPException(status_code=404, detail=ACCOUNT_NOT_FOUND)
     if account.user_id != current_user:
-        raise HTTPException(status_code=403, detail="Ce n'est pas votre compte")
+        raise HTTPException(status_code=403, detail=NOT_YOUR_ACCOUNT)
     if account.closed:
-        raise HTTPException(status_code=400, detail="Compte fermé")
+        raise HTTPException(status_code=400, detail=ACCOUNT_CLOSED)
     if not amount_verification(balance.amount):
-        raise HTTPException(status_code=400, detail="Montant invalide")
+        raise HTTPException(status_code=400, detail=INVALID_AMOUNT)
     if not enough_amount(balance.amount, account.balance):
-        raise HTTPException(status_code=400, detail="Solde insuffisant")
+        raise HTTPException(status_code=400, detail=INSUFFICIENT_BALANCE)
 
     account.balance -= balance.amount
     withdraw = models.Withdraw(
@@ -98,14 +116,16 @@ def withdraw_endpoint(balance: withdrawCreate, current_user: int = Depends(get_c
 def list_withdraws(account_id: int, current_user: int = Depends(get_current_user), db: Session = Depends(get_session)):
     account = db.get(models.Account, account_id)
     if not account or account.user_id != current_user:
-        raise HTTPException(status_code=403, detail="Accès refusé")
+        raise HTTPException(status_code=403, detail=ACCESS_DENIED)
     if account.closed:
-        raise HTTPException(status_code=400, detail="Compte fermé")
+        raise HTTPException(status_code=400, detail=ACCOUNT_CLOSED)
 
     withdraws = db.exec(select(models.Withdraw).where(models.Withdraw.account_id == account_id).order_by(models.Withdraw.date.desc())).all()
     return withdraws
 
-# ---------------- TRANSFERS ----------------
+# ---------------------------
+# Transfers
+# ---------------------------
 def complete_transfer_task(db: Session, transfer_id: int):
     transfer = db.get(models.Transfer, transfer_id)
     if not transfer or transfer.status != "pending":
@@ -127,21 +147,20 @@ def delayed_complete_transfer(transfer_id: int, db: Session, delay: int = 30):
 @router.post("/transfer")
 def transfer_endpoint(balance: TransferByRIB, background_tasks: BackgroundTasks, current_user: int = Depends(get_current_user), db: Session = Depends(get_session)):
     recipient = db.exec(select(models.Account).where(models.Account.rib == balance.to_rib)).first()
-    print(recipient)
     sender = db.get(models.Account, balance.from_account_id)
     
     if not sender or not recipient:
-        raise HTTPException(status_code=404, detail="Compte non trouvé")
+        raise HTTPException(status_code=404, detail=ACCOUNT_NOT_FOUND)
     if sender.user_id != current_user:
-        raise HTTPException(status_code=403, detail="Ce n'est pas votre compte")
+        raise HTTPException(status_code=403, detail=NOT_YOUR_ACCOUNT)
     if sender.id == recipient.id:
-        raise HTTPException(status_code=400, detail="Transfert impossible (même compte)")
+        raise HTTPException(status_code=400, detail=SAME_ACCOUNT_TRANSFER)
     if sender.closed or recipient.closed:
-        raise HTTPException(status_code=400, detail="Compte fermé")
+        raise HTTPException(status_code=400, detail=ACCOUNT_CLOSED)
     if not amount_verification(balance.amount):
-        raise HTTPException(status_code=400, detail="Montant invalide")
+        raise HTTPException(status_code=400, detail=INVALID_AMOUNT)
     if not enough_amount(balance.amount, sender.balance):
-        raise HTTPException(status_code=400, detail="Solde insuffisant")
+        raise HTTPException(status_code=400, detail=INSUFFICIENT_BALANCE)
 
     sender.balance -= balance.amount
     transfer = models.Transfer(
@@ -157,7 +176,6 @@ def transfer_endpoint(balance: TransferByRIB, background_tasks: BackgroundTasks,
     db.refresh(transfer)
     db.refresh(sender)
 
-    # Tâche en arrière-plan pour compléter le transfert
     background_tasks.add_task(delayed_complete_transfer, transfer_id=transfer.id, db=db, delay=30)
 
     return {"message": f"Transfert de {balance.amount}€ initié", "transfer_id": transfer.id, "status": "pending", "new_balance_sender": sender.balance}
@@ -166,10 +184,10 @@ def transfer_endpoint(balance: TransferByRIB, background_tasks: BackgroundTasks,
 def abort_transfer(transfer_id: int, current_user: int = Depends(get_current_user), db: Session = Depends(get_session)):
     transfer = db.get(models.Transfer, transfer_id)
     if not transfer or transfer.status != "pending":
-        raise HTTPException(status_code=404, detail="Transfert non trouvé ou déjà traité")
+        raise HTTPException(status_code=404, detail=TRANSFER_NOT_FOUND)
     sender = db.get(models.Account, transfer.from_account_id)
     if sender.user_id != current_user:
-        raise HTTPException(status_code=403, detail="Accès refusé")
+        raise HTTPException(status_code=403, detail=ACCESS_DENIED)
     
     sender.balance += transfer.amount
     transfer.status = "aborted"
