@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException, Depends, BackgroundTasks
-from datetime import datetime
+from datetime import datetime, timezone
 from time import sleep
 from sqlmodel import Session, select
 from app.db import models
@@ -58,7 +58,7 @@ def deposit_endpoint(balance: depositCreate, current_user: int = Depends(get_cur
         account_id=account.id,
         amount=balance.amount,
         type="deposit",
-        date=datetime.utcnow()
+        date=datetime.now(timezone.utc)
     )
     db.add(deposit)
     db.commit()
@@ -75,7 +75,11 @@ def list_deposits(account_id: int, current_user: int = Depends(get_current_user)
     if account.closed:
         raise HTTPException(status_code=400, detail=ACCOUNT_CLOSED)
 
-    deposits = db.exec(select(models.Deposit).where(models.Deposit.account_id == account_id).order_by(models.Deposit.date.desc())).all()
+    deposits = db.exec(
+        select(models.Deposit)
+        .where(models.Deposit.account_id == account_id)
+        .order_by(models.Deposit.date.desc())
+    ).all()
     return deposits
 
 # ---------------------------
@@ -97,13 +101,13 @@ def withdraw_endpoint(balance: withdrawCreate, current_user: int = Depends(get_c
         raise HTTPException(status_code=400, detail=INVALID_AMOUNT)
     if not enough_amount(balance.amount, account.balance):
         raise HTTPException(status_code=400, detail=INSUFFICIENT_BALANCE)
-
+    
     account.balance -= balance.amount
     withdraw = models.Withdraw(
         account_id=account.id,
         amount=balance.amount,
         type="withdraw",
-        date=datetime.utcnow()
+        date=datetime.now(timezone.utc)
     )
     db.add(withdraw)
     db.commit()
@@ -120,7 +124,11 @@ def list_withdraws(account_id: int, current_user: int = Depends(get_current_user
     if account.closed:
         raise HTTPException(status_code=400, detail=ACCOUNT_CLOSED)
 
-    withdraws = db.exec(select(models.Withdraw).where(models.Withdraw.account_id == account_id).order_by(models.Withdraw.date.desc())).all()
+    withdraws = db.exec(
+        select(models.Withdraw)
+        .where(models.Withdraw.account_id == account_id)
+        .order_by(models.Withdraw.date.desc())
+    ).all()
     return withdraws
 
 # ---------------------------
@@ -161,7 +169,7 @@ def transfer_endpoint(balance: TransferByRIB, background_tasks: BackgroundTasks,
         raise HTTPException(status_code=400, detail=INVALID_AMOUNT)
     if not enough_amount(balance.amount, sender.balance):
         raise HTTPException(status_code=400, detail=INSUFFICIENT_BALANCE)
-
+    
     sender.balance -= balance.amount
     transfer = models.Transfer(
         from_account_id=sender.id,
@@ -169,7 +177,7 @@ def transfer_endpoint(balance: TransferByRIB, background_tasks: BackgroundTasks,
         amount=balance.amount,
         type="transfer",
         status="pending",
-        date=datetime.utcnow()
+        date=datetime.now(timezone.utc)
     )
     db.add(transfer)
     db.commit()
@@ -199,8 +207,12 @@ def abort_transfer(transfer_id: int, current_user: int = Depends(get_current_use
 def get_user_transfers(current_user: int = Depends(get_current_user), db: Session = Depends(get_session)):
     accounts = db.exec(select(models.Account).where(models.Account.user_id == current_user)).all()
     account_ids = [acc.id for acc in accounts]
-    transfers = db.exec(select(models.Transfer).where(
-        (models.Transfer.from_account_id.in_(account_ids)) | 
-        (models.Transfer.to_account_id.in_(account_ids))
-    ).order_by(models.Transfer.date.desc())).all()
+    transfers = db.exec(
+        select(models.Transfer)
+        .where(
+            (models.Transfer.from_account_id.in_(account_ids)) |
+            (models.Transfer.to_account_id.in_(account_ids))
+        )
+        .order_by(models.Transfer.date.desc())
+    ).all()
     return transfers
