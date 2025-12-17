@@ -11,6 +11,10 @@ from app.schemas.account_schemas import *
 router = APIRouter(prefix="/accounts", tags=["Accounts"])
 init_db()
 
+
+ACCOUNT_NOT_FOUND = "Compte introuvable ou non autorisé"
+
+
 def get_current_user(token: str = Depends(oauth2_scheme)):
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
@@ -76,7 +80,7 @@ def create_account(account_data: AccountCreate, db: Session = Depends(get_sessio
 def close_account(account_id: int, db: Session = Depends(get_session), current_user: int = Depends(get_current_user)):
     account = db.query(models.Account).filter(models.Account.id == account_id).first()
     if not account or account.user_id != current_user:
-        raise HTTPException(status_code=400, detail="Compte introuvable ou non autorisé")
+        raise HTTPException(status_code=400, detail=ACCOUNT_NOT_FOUND)
     if account.main:
         raise HTTPException(status_code=400, detail="Impossible de clôturer le compte principal")
     if account.closed:
@@ -100,7 +104,7 @@ def add_beneficiary(account_id: int, data: BeneficiaryCreate, db: Session = Depe
     name = data.name
 
     if not account or account.user_id != current_user:
-        raise HTTPException(status_code=400, detail="Compte introuvable ou non autorisé")
+        raise HTTPException(status_code=400, detail=ACCOUNT_NOT_FOUND)
 
     if account.rib == rib:
         raise HTTPException(status_code=400, detail="Impossible d'ajouter son propre RIB")
@@ -129,14 +133,14 @@ def add_beneficiary(account_id: int, data: BeneficiaryCreate, db: Session = Depe
 def list_beneficiaries(account_id: int, db: Session = Depends(get_session), current_user: int = Depends(get_current_user)):
     account = db.query(models.Account).filter(models.Account.id == account_id).first()
     if not account or account.user_id != current_user:
-        raise HTTPException(status_code=400, detail="Compte introuvable ou non autorisé")
+        raise HTTPException(status_code=400, detail=ACCOUNT_NOT_FOUND)
     return db.query(models.Beneficiary).filter(models.Beneficiary.account_id == account_id).all()
 
 @router.delete("/beneficiary/{account_id}/{rib}")
 def delete_beneficiary(account_id: int, rib: str, db: Session = Depends(get_session), current_user: int = Depends(get_current_user)):
     account = db.query(models.Account).filter(models.Account.id == account_id).first()
     if not account or account.user_id != current_user:
-        raise HTTPException(status_code=400, detail="Compte introuvable ou non autorisé")
+        raise HTTPException(status_code=400, detail=ACCOUNT_NOT_FOUND)
     beneficiary = db.query(models.Beneficiary).filter(models.Beneficiary.account_id == account_id, models.Beneficiary.rib == rib).first()
     if not beneficiary:
         raise HTTPException(status_code=400, detail="Bénéficiaire introuvable")
@@ -148,5 +152,5 @@ def delete_beneficiary(account_id: int, rib: str, db: Session = Depends(get_sess
 def get_rib(account_id: int, db: Session = Depends(get_session), current_user: int = Depends(get_current_user)):
     account = db.query(models.Account).filter(models.Account.id == account_id).first()
     if not account or account.user_id != current_user:
-        raise HTTPException(status_code=400, detail="Compte introuvable ou non autorisé")
+        raise HTTPException(status_code=400, detail=ACCOUNT_NOT_FOUND)
     return account.rib
