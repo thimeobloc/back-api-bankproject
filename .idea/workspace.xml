@@ -5,12 +5,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="69bfb63d-c1a2-423d-a7c2-739dce80df73" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/Dockerfile" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/api/account_routes.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/api/account_routes.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/api/balance_routes.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/api/balance_routes.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/schemas/account_schemas.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/schemas/account_schemas.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/schemas/balance_schemas.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/schemas/balance_schemas.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/database.db" beforeDir="false" afterPath="$PROJECT_DIR$/database.db" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -21,6 +17,7 @@
     <option name="RECENT_TEMPLATES">
       <list>
         <option value="Python Script" />
+        <option value="Dockerfile" />
       </list>
     </option>
   </component>
@@ -59,8 +56,10 @@
 }</component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
-      <recent name="C:\Users\eband\Documents\Coding Factory\B2\projet bank\back-api-bankproject\app" />
       <recent name="C:\Users\Antonin-PC\Desktop\back-api-bankproject" />
+      <recent name="C:\Users\Antonin-PC\Desktop\back-api-bankproject\Dockerfile" />
+      <recent name="C:\Users\Antonin-PC\Desktop\back-api-bankproject\app" />
+      <recent name="C:\Users\eband\Documents\Coding Factory\B2\projet bank\back-api-bankproject\app" />
     </key>
   </component>
   <component name="SharedIndexes">
