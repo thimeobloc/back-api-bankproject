@@ -1,269 +1,218 @@
 from fastapi import APIRouter, HTTPException, Depends, BackgroundTasks
-from datetime import datetime
+from datetime import datetime, timezone
 from time import sleep
+from sqlmodel import Session, select
 from app.db import models
-from app.schemas.balance_schemas import depositCreate, withdrawCreate, transferCreate
-from sqlmodel import Session
-from app.db.database import users_db, accounts_db, balances_db, get_session, init_db
-from app.core.security import amount_verification, enough_amount
+from app.schemas.balance_schemas import DepositCreate, WithdrawCreate, TransferByRIB
+from app.db.database import get_session
+from app.core.security import amount_verification, enough_amount, oauth2_scheme, SECRET_KEY, ALGORITHM
+from jose import jwt, JWTError
 
 router = APIRouter(prefix="/balances", tags=["Balances"])
 
-deposit_counter = 0
-withdraw_counter = 0
-transfer_counter = 0
+# ---------------------------
+# Constants
+# ---------------------------
+ACCESS_DENIED = "Accès refusé"
+ACCOUNT_NOT_FOUND = "Compte non trouvé"
+NOT_YOUR_ACCOUNT = "Ce n'est pas votre compte"
+ACCOUNT_CLOSED = "Compte fermé"
+INVALID_AMOUNT = "Montant invalide"
+INSUFFICIENT_BALANCE = "Solde insuffisant"
+SAME_ACCOUNT_TRANSFER = "Transfert impossible (même compte)"
+TRANSFER_NOT_FOUND = "Transfert non trouvé ou déjà traité"
 
-init_db()
+# ---------------------------
+# JWT Helper
+# ---------------------------
+def get_current_user(token: str = Depends(oauth2_scheme)):
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        user_id: int = payload.get("user_id")
+        if user_id is None:
+            raise HTTPException(status_code=401, detail="Invalid token")
+        return user_id
+    except JWTError:
+        raise HTTPException(status_code=401, detail="Invalid token")
 
-# ---------------- DEPOSITS ----------------
+# ---------------------------
+# Deposits
+# ---------------------------
 @router.post("/deposit")
-def deposit_endpoint(balance: depositCreate, db: Session = Depends(get_session)):
-    user = db.query(models.User).filter(models.User.id == balance.user_id).first()
-    if not user:
-        raise HTTPException(status_code=400, detail="L'utilisateur n'existe pas")
-
-    account = db.query(models.Account).filter(models.Account.id == balance.account_id).first()
+def deposit_endpoint(balance: DepositCreate, current_user: int = Depends(get_current_user), db: Session = Depends(get_session)):
+    if balance.user_id != current_user:
+        raise HTTPException(status_code=403, detail=ACCESS_DENIED)
+    
+    account = db.get(models.Account, balance.account_id)
     if not account:
-        raise HTTPException(status_code=404, detail="Account not found")
-
-    if account.user_id != balance.user_id:
-        raise HTTPException(status_code=400, detail="Ce n'est pas votre compte monsieur")
-
+        raise HTTPException(status_code=404, detail=ACCOUNT_NOT_FOUND)
+    if account.user_id != current_user:
+        raise HTTPException(status_code=403, detail=NOT_YOUR_ACCOUNT)
     if account.closed:
-        raise HTTPException(status_code=400, detail="Transaction impossible : compte fermé")
-
+        raise HTTPException(status_code=400, detail=ACCOUNT_CLOSED)
     if not amount_verification(balance.amount):
-        raise HTTPException(status_code=400, detail="Le montant donné est invalide")
-
+        raise HTTPException(status_code=400, detail=INVALID_AMOUNT)
+    
     account.balance += balance.amount
-
     deposit = models.Deposit(
         account_id=account.id,
         amount=balance.amount,
-        status="pending",
-        date=datetime.utcnow()
+        type="deposit",
+        date=datetime.now(timezone.utc)
     )
-
     db.add(deposit)
     db.commit()
     db.refresh(deposit)
     db.refresh(account)
 
-    return {
-        "message": f"Deposit of {balance.amount}€ successful",
-        "new_balance": account.balance,
-        "deposit_id": deposit.id
-    }
+    return {"message": f"Dépot de {balance.amount}€ effectué", "new_balance": account.balance, "deposit_id": deposit.id}
 
-@router.get("/deposits/{account_id}/{user_id}", response_model=list[models.Deposit])
-def list_deposits_by_account(account_id: int, user_id: int, db: Session = Depends(get_session)):
-    user = db.query(models.User).filter(models.User.id == user_id).first()
-    if not user:
-        raise HTTPException(status_code=400, detail="L'utilisateur n'existe pas")
-
-    account = db.query(models.Account).filter(models.Account.id == account_id).first()
-    if not account:
-        raise HTTPException(status_code=404, detail="Account not found")
-
-    if account.user_id != user_id:
-        raise HTTPException(status_code=400, detail="Ce n'est pas votre compte monsieur")
-
+@router.get("/deposits/{account_id}", response_model=list[models.Deposit])
+def list_deposits(account_id: int, current_user: int = Depends(get_current_user), db: Session = Depends(get_session)):
+    account = db.get(models.Account, account_id)
+    if not account or account.user_id != current_user:
+        raise HTTPException(status_code=403, detail=ACCESS_DENIED)
     if account.closed:
-        raise HTTPException(status_code=400, detail="Action impossible : compte fermé")
+        raise HTTPException(status_code=400, detail=ACCOUNT_CLOSED)
 
-    deposits = account.deposits
-    return sorted(deposits, key=lambda x: x.date, reverse=True)
+    deposits = db.exec(
+        select(models.Deposit)
+        .where(models.Deposit.account_id == account_id)
+        .order_by(models.Deposit.date.desc())
+    ).all()
+    return deposits
 
-
-# ---------------- WITHDRAWS ----------------
+# ---------------------------
+# Withdraws
+# ---------------------------
 @router.post("/withdraw")
-def withdraw_endpoint(balance: withdrawCreate, users_db=Depends(users_db), accounts_db=Depends(accounts_db), db: Session = Depends(get_session)):
-    global withdraw_counter
-
-    user = next((u for u in users_db if u.id == balance.user_id), None)
-    if not user:
-        raise HTTPException(status_code=400, detail="L'utilisateur n'existe pas")
-
-    account = next((a for a in accounts_db if a.id == balance.account_id), None)
+def withdraw_endpoint(balance: WithdrawCreate, current_user: int = Depends(get_current_user), db: Session = Depends(get_session)):
+    if balance.user_id != current_user:
+        raise HTTPException(status_code=403, detail=ACCESS_DENIED)
+    
+    account = db.get(models.Account, balance.account_id)
     if not account:
-        raise HTTPException(status_code=404, detail="Account not found")
-
-    if account.user_id != balance.user_id:
-        raise HTTPException(status_code=400, detail="Ce n'est pas votre compte monsieur")
-
+        raise HTTPException(status_code=404, detail=ACCOUNT_NOT_FOUND)
+    if account.user_id != current_user:
+        raise HTTPException(status_code=403, detail=NOT_YOUR_ACCOUNT)
     if account.closed:
-        raise HTTPException(status_code=400, detail="Transaction impossible : compte fermé")
-
+        raise HTTPException(status_code=400, detail=ACCOUNT_CLOSED)
     if not amount_verification(balance.amount):
-        raise HTTPException(status_code=400, detail="Le montant donné est invalide")
-
+        raise HTTPException(status_code=400, detail=INVALID_AMOUNT)
     if not enough_amount(balance.amount, account.balance):
-        raise HTTPException(status_code=400, detail="Monsieur, vous êtes pauvre")
-
+        raise HTTPException(status_code=400, detail=INSUFFICIENT_BALANCE)
+    
     account.balance -= balance.amount
-    withdraw_counter += 1
-
     withdraw = models.Withdraw(
         account_id=account.id,
         amount=balance.amount,
-        status="pending",
-        date=datetime.utcnow()
+        type="withdraw",
+        date=datetime.now(timezone.utc)
     )
-
     db.add(withdraw)
     db.commit()
     db.refresh(withdraw)
+    db.refresh(account)
 
-    account.withdraws.append(withdraw)
+    return {"message": f"Retrait de {balance.amount}€ effectué", "new_balance": account.balance}
 
-    return {
-        "message": f"Withdrawal of {balance.amount}€ successful",
-        "new_balance": account.balance
-    }
-
-@router.get("/withdraws/{account_id}/{user_id}", response_model=list[models.Withdraw])
-def list_withdraws_by_account(account_id: int, user_id: int, users_db=Depends(users_db), accounts_db=Depends(accounts_db)):
-    account = next((a for a in accounts_db if a.id == account_id), None)
-    user = next((u for u in users_db if u.id == user_id), None)
-
-    if not user:
-        raise HTTPException(status_code=400, detail="L'utilisateur n'existe pas")
-    if not account:
-        raise HTTPException(status_code=404, detail="Account not found")
-    if account.user_id != user_id:
-        raise HTTPException(status_code=400, detail="Ce n'est pas votre compte monsieur")
+@router.get("/withdraws/{account_id}", response_model=list[models.Withdraw])
+def list_withdraws(account_id: int, current_user: int = Depends(get_current_user), db: Session = Depends(get_session)):
+    account = db.get(models.Account, account_id)
+    if not account or account.user_id != current_user:
+        raise HTTPException(status_code=403, detail=ACCESS_DENIED)
     if account.closed:
-        raise HTTPException(status_code=400, detail="Action impossible : compte fermé")
+        raise HTTPException(status_code=400, detail=ACCOUNT_CLOSED)
 
-    withdraws = account.withdraws
-    return sorted(withdraws, key=lambda x: x.date, reverse=True)
+    withdraws = db.exec(
+        select(models.Withdraw)
+        .where(models.Withdraw.account_id == account_id)
+        .order_by(models.Withdraw.date.desc())
+    ).all()
+    return withdraws
 
-
-# ---------------- TRANSFERS ----------------
-def complete_transfer_task(transfer_id: int):
-    with next(get_session()) as db:
-        transfer = db.query(models.Transfer).filter(models.Transfer.id == transfer_id).first()
-        if not transfer or transfer.status != "pending":
-            return
-        recipient = db.query(models.Account).filter(models.Account.id == transfer.to_account_id).first()
-        if not recipient:
-            transfer.status = "failed"
-            db.commit()
-            return
-        recipient.balance += transfer.amount
-        transfer.status = "completed"
-        transfer.completed_at = datetime.utcnow()
-        db.add(recipient)
-        db.add(transfer)
+# ---------------------------
+# Transfers
+# ---------------------------
+def complete_transfer_task(db: Session, transfer_id: int):
+    transfer = db.get(models.Transfer, transfer_id)
+    if not transfer or transfer.status != "pending":
+        return
+    recipient = db.get(models.Account, transfer.to_account_id)
+    if not recipient:
+        transfer.status = "failed"
         db.commit()
+        return
+    recipient.balance += transfer.amount
+    transfer.status = "completed"
+    db.add_all([recipient, transfer])
+    db.commit()
 
-
-
-def delayed_complete_transfer(transfer_id: int, delay: int = 30):
+def delayed_complete_transfer(transfer_id: int, db: Session, delay: int = 30):
     sleep(delay)
-    complete_transfer_task(transfer_id)
-
+    complete_transfer_task(db, transfer_id)
 
 @router.post("/transfer")
-def transfer_endpoint(balance: transferCreate, background_tasks: BackgroundTasks, users_db=Depends(users_db), accounts_db=Depends(accounts_db), db: Session = Depends(get_session)):
-    global transfer_counter
-
-    sender = next((a for a in accounts_db if a.id == balance.from_account_id), None)
-    recipient = next((a for a in accounts_db if a.id == balance.to_account_id), None)
-    user = next((u for u in users_db if u.id == sender.user_id), None)
-
-    if not user:
-        raise HTTPException(status_code=400, detail="L'utilisateur n'existe pas")
+def transfer_endpoint(balance: TransferByRIB, background_tasks: BackgroundTasks, current_user: int = Depends(get_current_user), db: Session = Depends(get_session)):
+    recipient = db.exec(select(models.Account).where(models.Account.rib == balance.to_rib)).first()
+    sender = db.get(models.Account, balance.from_account_id)
+    
     if not sender or not recipient:
-        raise HTTPException(status_code=404, detail="Account not found")
-    if sender.user_id != user.id:
-        raise HTTPException(status_code=400, detail="Ce n'est pas votre compte monsieur")
+        raise HTTPException(status_code=404, detail=ACCOUNT_NOT_FOUND)
+    if sender.user_id != current_user:
+        raise HTTPException(status_code=403, detail=NOT_YOUR_ACCOUNT)
     if sender.id == recipient.id:
-        raise HTTPException(status_code=400, detail="Transaction impossible (même compte)")
+        raise HTTPException(status_code=400, detail=SAME_ACCOUNT_TRANSFER)
     if sender.closed or recipient.closed:
-        raise HTTPException(status_code=400, detail="Transaction impossible : compte fermé")
+        raise HTTPException(status_code=400, detail=ACCOUNT_CLOSED)
     if not amount_verification(balance.amount):
-        raise HTTPException(status_code=400, detail="Le montant donné est invalide")
+        raise HTTPException(status_code=400, detail=INVALID_AMOUNT)
     if not enough_amount(balance.amount, sender.balance):
-        raise HTTPException(status_code=400, detail="Monsieur, vous êtes pauvre")
-
+        raise HTTPException(status_code=400, detail=INSUFFICIENT_BALANCE)
+    
     sender.balance -= balance.amount
-    transfer_counter += 1
-
     transfer = models.Transfer(
         from_account_id=sender.id,
         to_account_id=recipient.id,
         amount=balance.amount,
-        status="pending",
         type="transfer",
-        date=datetime.utcnow()
+        status="pending",
+        date=datetime.now(timezone.utc)
     )
-
     db.add(transfer)
-    db.commit()
-    db.refresh(transfer)
-
-    sender.transfers_sent.append(transfer)
-
-    background_tasks.add_task(delayed_complete_transfer, transfer_id=transfer.id, delay=30)
-
-
-    return {
-        "message": f"Transfer of {balance.amount}€ created. Will complete automatically in 30 seconds",
-        "transfer_id": transfer_counter,
-        "status": "pending",
-        "new_balance_sender": sender.balance
-    }
-
-
-@router.delete("/transfer_abort/{from_account_id}/{to_account_id}")
-def abort_transfer(from_account_id: int, to_account_id: int, db: Session = Depends(get_session)):
-    # Cherche un transfert en cours (pending) pour ces deux comptes
-    transfer = db.query(models.Transfer).filter(
-        models.Transfer.from_account_id == from_account_id,
-        models.Transfer.to_account_id == to_account_id,
-        models.Transfer.status == "pending"
-    ).first()
-
-    if not transfer:
-        raise HTTPException(status_code=404, detail="No pending transfer found for these accounts")
-
-    # Annule le transfert
-    transfer.status = "aborted"
-
-    # Rembourse l'argent à l'expéditeur
-    sender = db.query(models.Account).filter(models.Account.id == from_account_id).first()
-    sender.balance += transfer.amount
-
-    # Actualiser la bdd
-    db.add(transfer)
-    db.add(sender)
     db.commit()
     db.refresh(transfer)
     db.refresh(sender)
 
-    return {"message": "Transfer aborted"}
+    background_tasks.add_task(delayed_complete_transfer, transfer_id=transfer.id, db=db, delay=30)
 
-@router.get("/transfers/user/{user_id}")
-def get_user_transfers(user_id: int, db: Session = Depends(get_session)):
-    # Récupère tous les comptes de l'utilisateur
-    accounts = db.query(models.Account).filter(models.Account.user_id == user_id).all()
+    return {"message": f"Transfert de {balance.amount}€ initié", "transfer_id": transfer.id, "status": "pending", "new_balance_sender": sender.balance}
+
+@router.delete("/transfer_abort/{transfer_id}")
+def abort_transfer(transfer_id: int, current_user: int = Depends(get_current_user), db: Session = Depends(get_session)):
+    transfer = db.get(models.Transfer, transfer_id)
+    if not transfer or transfer.status != "pending":
+        raise HTTPException(status_code=404, detail=TRANSFER_NOT_FOUND)
+    sender = db.get(models.Account, transfer.from_account_id)
+    if sender.user_id != current_user:
+        raise HTTPException(status_code=403, detail=ACCESS_DENIED)
+    
+    sender.balance += transfer.amount
+    transfer.status = "aborted"
+    db.add_all([sender, transfer])
+    db.commit()
+    return {"message": "Transfert annulé"}
+
+@router.get("/transfers")
+def get_user_transfers(current_user: int = Depends(get_current_user), db: Session = Depends(get_session)):
+    accounts = db.exec(select(models.Account).where(models.Account.user_id == current_user)).all()
     account_ids = [acc.id for acc in accounts]
-
-    # Récupère tous les transferts envoyés ou reçus par ces comptes
-    transfers = db.query(models.Transfer).filter(
-        (models.Transfer.from_account_id.in_(account_ids)) |
-        (models.Transfer.to_account_id.in_(account_ids))
+    transfers = db.exec(
+        select(models.Transfer)
+        .where(
+            (models.Transfer.from_account_id.in_(account_ids)) |
+            (models.Transfer.to_account_id.in_(account_ids))
+        )
+        .order_by(models.Transfer.date.desc())
     ).all()
-
-    return [
-        {
-            "transfer_id": t.id,
-            "from_account_id": t.from_account_id,
-            "to_account_id": t.to_account_id,
-            "amount": t.amount,
-            "status": t.status,
-            "date": t.date
-        }
-        for t in transfers
-    ]
+    return transfers

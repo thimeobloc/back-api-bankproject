@@ -18,3 +18,8 @@ class LoginSchema(BaseModel):
     """Schema for login"""
     email: EmailStr
     password: str
+
+class UserResponse(BaseModel):
+    access_token: str
+    token_type: str
+    user: UserOut

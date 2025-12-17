@@ -40,4 +40,7 @@ class beneficiary(BaseModel):
     rib: str
     name: str
     user_id: int
-    date: Optional[datetime] = None 
+    date: Optional[datetime] = None
+class BeneficiaryCreate(BaseModel):
+    rib: str
+    name: str
