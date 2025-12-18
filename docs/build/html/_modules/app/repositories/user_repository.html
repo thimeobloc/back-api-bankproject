@@ -31,18 +31,42 @@
           <div class="body" role="main">
             
   <h1>Source code for app.repositories.user_repository</h1><div class="highlight"><pre>
-<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">sqlmodel</span><span class="w"> </span><span class="kn">import</span> <span class="n">Session</span><span class="p">,</span> <span class="n">select</span>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">User repository module.</span>
+
+<span class="sd">This module defines the UserRepo class responsible for</span>
+<span class="sd">handling database operations related to users.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">sqlmodel</span><span class="w"> </span><span class="kn">import</span> <span class="n">Session</span><span class="p">,</span> <span class="n">select</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">app.db.models</span><span class="w"> </span><span class="kn">import</span> <span class="n">User</span>
+
 
 <div class="viewcode-block" id="UserRepo">
 <a class="viewcode-back" href="../../../app.repositories.html#app.repositories.user_repository.UserRepo">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">UserRepo</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    User repository.</span>
+
+<span class="sd">    Encapsulates all database operations related to the User entity.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">session</span><span class="p">:</span> <span class="n">Session</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialize the user repository.</span>
+
+<span class="sd">        :param session: Active database session</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">session</span> <span class="o">=</span> <span class="n">session</span>
 
 <div class="viewcode-block" id="UserRepo.get_all_users">
 <a class="viewcode-back" href="../../../app.repositories.html#app.repositories.user_repository.UserRepo.get_all_users">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_all_users</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Retrieve all users from the database.</span>
+
+<span class="sd">        :return: List of all User records</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">statement</span> <span class="o">=</span> <span class="n">select</span><span class="p">(</span><span class="n">User</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">exec</span><span class="p">(</span><span class="n">statement</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">()</span></div>
 
@@ -50,12 +74,24 @@
 <div class="viewcode-block" id="UserRepo.get_user_by_id">
 <a class="viewcode-back" href="../../../app.repositories.html#app.repositories.user_repository.UserRepo.get_user_by_id">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_user_by_id</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">user_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Retrieve a user by its identifier.</span>
+
+<span class="sd">        :param user_id: User unique identifier</span>
+<span class="sd">        :return: User instance or None if not found</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">User</span><span class="p">,</span> <span class="n">user_id</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="UserRepo.create_user">
 <a class="viewcode-back" href="../../../app.repositories.html#app.repositories.user_repository.UserRepo.create_user">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">create_user</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">user</span><span class="p">:</span> <span class="n">User</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Create a new user in the database.</span>
+
+<span class="sd">        :param user: User instance to persist</span>
+<span class="sd">        :return: Persisted User with generated fields</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">user</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">refresh</span><span class="p">(</span><span class="n">user</span><span class="p">)</span>
@@ -89,6 +125,10 @@
     </div>
 </search>
 <script>document.getElementById('searchbox').style.display = "block"</script><h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules.html">app</a></li>
+</ul>
 
 <div class="relations">
 <h3>Related Topics</h3>

@@ -14,6 +14,8 @@
     <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="app.schemas package" href="app.schemas.html" />
+    <link rel="prev" title="app.db package" href="app.db.html" />
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
   
@@ -41,24 +43,53 @@
 </section>
 <section id="module-app.repositories.user_repository">
 <span id="app-repositories-user-repository-module"></span><h2>app.repositories.user_repository module<a class="headerlink" href="#module-app.repositories.user_repository" title="Link to this heading">¶</a></h2>
+<p>User repository module.</p>
+<p>This module defines the UserRepo class responsible for
+handling database operations related to users.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="app.repositories.user_repository.UserRepo">
 <span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">app.repositories.user_repository.</span></span><span class="sig-name descname"><span class="pre">UserRepo</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">session</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Session</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/repositories/user_repository.html#UserRepo"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#app.repositories.user_repository.UserRepo" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>User repository.</p>
+<p>Encapsulates all database operations related to the User entity.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="app.repositories.user_repository.UserRepo.create_user">
 <span class="sig-name descname"><span class="pre">create_user</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">user</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="app.db.html#app.db.models.User" title="app.db.models.User"><span class="pre">User</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/repositories/user_repository.html#UserRepo.create_user"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#app.repositories.user_repository.UserRepo.create_user" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Create a new user in the database.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>user</strong> – User instance to persist</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Persisted User with generated fields</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="app.repositories.user_repository.UserRepo.get_all_users">
 <span class="sig-name descname"><span class="pre">get_all_users</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/repositories/user_repository.html#UserRepo.get_all_users"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#app.repositories.user_repository.UserRepo.get_all_users" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Retrieve all users from the database.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>List of all User records</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="app.repositories.user_repository.UserRepo.get_user_by_id">
 <span class="sig-name descname"><span class="pre">get_user_by_id</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">user_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/repositories/user_repository.html#UserRepo.get_user_by_id"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#app.repositories.user_repository.UserRepo.get_user_by_id" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Retrieve a user by its identifier.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>user_id</strong> – User unique identifier</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>User instance or None if not found</p>
+</dd>
+</dl>
+</dd></dl>
 
 </dd></dl>
 
@@ -94,11 +125,24 @@
     </div>
 </search>
 <script>document.getElementById('searchbox').style.display = "block"</script><h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">app</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="app.html">app package</a></li>
+</ul>
+</li>
+</ul>
 
 <div class="relations">
 <h3>Related Topics</h3>
 <ul>
   <li><a href="index.html">Documentation overview</a><ul>
+  <li><a href="modules.html">app</a><ul>
+  <li><a href="app.html">app package</a><ul>
+      <li>Previous: <a href="app.db.html" title="previous chapter">app.db package</a></li>
+      <li>Next: <a href="app.schemas.html" title="next chapter">app.schemas package</a></li>
+  </ul></li>
+  </ul></li>
   </ul></li>
 </ul>
 </div>

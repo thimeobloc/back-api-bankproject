@@ -14,6 +14,8 @@
     <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="app.repositories package" href="app.repositories.html" />
+    <link rel="prev" title="app.core package" href="app.core.html" />
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
   
@@ -38,77 +40,187 @@
 </section>
 <section id="module-app.db.database">
 <span id="app-db-database-module"></span><h2>app.db.database module<a class="headerlink" href="#module-app.db.database" title="Link to this heading">¶</a></h2>
+<p>Database configuration and session utilities.</p>
+<p>This module configures the SQLModel database engines, provides session
+dependencies for FastAPI, initializes database schemas, and exposes
+helper functions to retrieve database entities.</p>
+<dl class="py data">
+<dt class="sig sig-object py" id="app.db.database.DATABASE_URL">
+<span class="sig-prename descclassname"><span class="pre">app.db.database.</span></span><span class="sig-name descname"><span class="pre">DATABASE_URL</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'sqlite:///database.db'</span></span><a class="headerlink" href="#app.db.database.DATABASE_URL" title="Link to this definition">¶</a></dt>
+<dd><p>Main database connection URL.</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="app.db.database.TEST_DATABASE_URL">
+<span class="sig-prename descclassname"><span class="pre">app.db.database.</span></span><span class="sig-name descname"><span class="pre">TEST_DATABASE_URL</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'sqlite:///:memory:'</span></span><a class="headerlink" href="#app.db.database.TEST_DATABASE_URL" title="Link to this definition">¶</a></dt>
+<dd><p>In-memory SQLite database URL used for testing.</p>
+</dd></dl>
+
 <dl class="py function">
 <dt class="sig sig-object py" id="app.db.database.accounts_db">
 <span class="sig-prename descclassname"><span class="pre">app.db.database.</span></span><span class="sig-name descname"><span class="pre">accounts_db</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">session</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Session</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Depends(get_session)</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/db/database.html#accounts_db"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#app.db.database.accounts_db" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Retrieve all accounts from the database.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>session</strong> (<em>Session</em>) – Database session dependency.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>List of account records.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list[<a class="reference internal" href="#app.db.models.Account" title="app.db.models.Account">Account</a>]</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="app.db.database.balances_db">
 <span class="sig-prename descclassname"><span class="pre">app.db.database.</span></span><span class="sig-name descname"><span class="pre">balances_db</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">session</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Session</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Depends(get_session)</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/db/database.html#balances_db"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#app.db.database.balances_db" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Retrieve all balance-related operations.</p>
+<p>This includes deposits, withdrawals, and transfers.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>session</strong> (<em>Session</em>) – Database session dependency.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>List of deposit, withdraw, and transfer records.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="app.db.database.engine">
+<span class="sig-prename descclassname"><span class="pre">app.db.database.</span></span><span class="sig-name descname"><span class="pre">engine</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">Engine(sqlite:///database.db)</span></span><a class="headerlink" href="#app.db.database.engine" title="Link to this definition">¶</a></dt>
+<dd><p>Primary SQLModel engine for the production database.</p>
+</dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="app.db.database.get_session">
 <span class="sig-prename descclassname"><span class="pre">app.db.database.</span></span><span class="sig-name descname"><span class="pre">get_session</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/db/database.html#get_session"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#app.db.database.get_session" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Provide a database session dependency.</p>
+<p>This function is used by FastAPI to inject a database session
+into request handlers.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Yields<span class="colon">:</span></dt>
+<dd class="field-odd"><p><em>Session</em> – Active database session.</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="app.db.database.get_test_session">
 <span class="sig-prename descclassname"><span class="pre">app.db.database.</span></span><span class="sig-name descname"><span class="pre">get_test_session</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/db/database.html#get_test_session"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#app.db.database.get_test_session" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Provide a database session for testing.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Yields<span class="colon">:</span></dt>
+<dd class="field-odd"><p><em>Session</em> – Active test database session.</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="app.db.database.init_db">
 <span class="sig-prename descclassname"><span class="pre">app.db.database.</span></span><span class="sig-name descname"><span class="pre">init_db</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">test</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/db/database.html#init_db"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#app.db.database.init_db" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Initialize the database schema.</p>
+<p>Creates all database tables based on SQLModel metadata.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>test</strong> (<em>bool</em>) – If True, initialize the test database.
+Otherwise, initialize the production database.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="app.db.database.test_engine">
+<span class="sig-prename descclassname"><span class="pre">app.db.database.</span></span><span class="sig-name descname"><span class="pre">test_engine</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">Engine(sqlite:///:memory:)</span></span><a class="headerlink" href="#app.db.database.test_engine" title="Link to this definition">¶</a></dt>
+<dd><p>SQLModel engine configured for test execution.</p>
+<p>Uses a static pool to allow multiple connections to the same
+in-memory database.</p>
+</dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="app.db.database.users_db">
 <span class="sig-prename descclassname"><span class="pre">app.db.database.</span></span><span class="sig-name descname"><span class="pre">users_db</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">session</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Session</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Depends(get_session)</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/db/database.html#users_db"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#app.db.database.users_db" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Retrieve all users from the database.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>session</strong> (<em>Session</em>) – Database session dependency.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>List of user records.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list[<a class="reference internal" href="#app.db.models.User" title="app.db.models.User">User</a>]</p>
+</dd>
+</dl>
+</dd></dl>
 
 </section>
 <section id="module-app.db.models">
 <span id="app-db-models-module"></span><h2>app.db.models module<a class="headerlink" href="#module-app.db.models" title="Link to this heading">¶</a></h2>
+<p>Database models definition.</p>
+<p>This module defines all SQLModel entities used by the application,
+including users, accounts, beneficiaries, deposits, withdrawals,
+and transfers. These models represent the database schema and
+their relationships.</p>
+<dl class="py data">
+<dt class="sig sig-object py" id="app.db.models.ACCOUNTS_TABLE_ID">
+<span class="sig-prename descclassname"><span class="pre">app.db.models.</span></span><span class="sig-name descname"><span class="pre">ACCOUNTS_TABLE_ID</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'accounts.id'</span></span><a class="headerlink" href="#app.db.models.ACCOUNTS_TABLE_ID" title="Link to this definition">¶</a></dt>
+<dd><p>Foreign key reference to the accounts table primary key.</p>
+</dd></dl>
+
 <dl class="py class">
 <dt class="sig sig-object py" id="app.db.models.Account">
 <span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">app.db.models.</span></span><span class="sig-name descname"><span class="pre">Account</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">user_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">balance</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">main</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">closed</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">status</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rib</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'Compte</span> <span class="pre">courant'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">date</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">datetime</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/db/models.html#Account"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#app.db.models.Account" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">SQLModel</span></code></p>
+<p>Bank account entity.</p>
+<p>Represents a user bank account used for deposits, withdrawals,
+and transfers.</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="app.db.models.Account.balance">
 <span class="sig-name descname"><span class="pre">balance</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></span><a class="headerlink" href="#app.db.models.Account.balance" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Current account balance.</p>
+</dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="app.db.models.Account.beneficiaries">
 <span class="sig-name descname"><span class="pre">beneficiaries</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Mapped</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#app.db.models.Beneficiary" title="app.db.models.Beneficiary"><span class="pre">Beneficiary</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#app.db.models.Account.beneficiaries" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Beneficiaries linked to this account.</p>
+</dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="app.db.models.Account.closed">
 <span class="sig-name descname"><span class="pre">closed</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></span><a class="headerlink" href="#app.db.models.Account.closed" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Indicates whether the account is closed.</p>
+</dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="app.db.models.Account.date">
 <span class="sig-name descname"><span class="pre">date</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">datetime</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#app.db.models.Account.date" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Account creation date.</p>
+</dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="app.db.models.Account.deposits">
 <span class="sig-name descname"><span class="pre">deposits</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Mapped</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#app.db.models.Deposit" title="app.db.models.Deposit"><span class="pre">Deposit</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#app.db.models.Account.deposits" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>List of deposits made on this account.</p>
+</dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="app.db.models.Account.id">
 <span class="sig-name descname"><span class="pre">id</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></span><a class="headerlink" href="#app.db.models.Account.id" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Unique identifier of the account.</p>
+</dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="app.db.models.Account.main">
 <span class="sig-name descname"><span class="pre">main</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></span><a class="headerlink" href="#app.db.models.Account.main" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Indicates whether this account is the main account.</p>
+</dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="app.db.models.Account.model_config">
@@ -119,37 +231,44 @@
 <dl class="py attribute">
 <dt class="sig sig-object py" id="app.db.models.Account.rib">
 <span class="sig-name descname"><span class="pre">rib</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></span><a class="headerlink" href="#app.db.models.Account.rib" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Bank RIB of the account.</p>
+</dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="app.db.models.Account.status">
 <span class="sig-name descname"><span class="pre">status</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></span><a class="headerlink" href="#app.db.models.Account.status" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Indicates whether the account has ongoing operations.</p>
+</dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="app.db.models.Account.transfers_received">
 <span class="sig-name descname"><span class="pre">transfers_received</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Mapped</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#app.db.models.Transfer" title="app.db.models.Transfer"><span class="pre">Transfer</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#app.db.models.Account.transfers_received" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Transfers received by this account.</p>
+</dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="app.db.models.Account.transfers_sent">
 <span class="sig-name descname"><span class="pre">transfers_sent</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Mapped</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#app.db.models.Transfer" title="app.db.models.Transfer"><span class="pre">Transfer</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#app.db.models.Account.transfers_sent" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Transfers sent from this account.</p>
+</dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="app.db.models.Account.type">
 <span class="sig-name descname"><span class="pre">type</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></span><a class="headerlink" href="#app.db.models.Account.type" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Type of account (e.g., current account).</p>
+</dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="app.db.models.Account.user_id">
 <span class="sig-name descname"><span class="pre">user_id</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></span><a class="headerlink" href="#app.db.models.Account.user_id" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Owner user identifier.</p>
+</dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="app.db.models.Account.withdraws">
 <span class="sig-name descname"><span class="pre">withdraws</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Mapped</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#app.db.models.Withdraw" title="app.db.models.Withdraw"><span class="pre">Withdraw</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#app.db.models.Account.withdraws" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>List of withdrawals made from this account.</p>
+</dd></dl>
 
 </dd></dl>
 
@@ -157,20 +276,25 @@
 <dt class="sig sig-object py" id="app.db.models.Beneficiary">
 <span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">app.db.models.</span></span><span class="sig-name descname"><span class="pre">Beneficiary</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rib</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">user_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">account_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/db/models.html#Beneficiary"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#app.db.models.Beneficiary" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">SQLModel</span></code></p>
+<p>Beneficiary entity.</p>
+<p>Represents a beneficiary that can receive transfers from an account.</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="app.db.models.Beneficiary.account">
 <span class="sig-name descname"><span class="pre">account</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Mapped</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#app.db.models.Account" title="app.db.models.Account"><span class="pre">Account</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#app.db.models.Beneficiary.account" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Associated account.</p>
+</dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="app.db.models.Beneficiary.account_id">
 <span class="sig-name descname"><span class="pre">account_id</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></span><a class="headerlink" href="#app.db.models.Beneficiary.account_id" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Identifier of the linked account.</p>
+</dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="app.db.models.Beneficiary.id">
 <span class="sig-name descname"><span class="pre">id</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#app.db.models.Beneficiary.id" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Unique identifier of the beneficiary.</p>
+</dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="app.db.models.Beneficiary.model_config">
@@ -181,22 +305,26 @@
 <dl class="py attribute">
 <dt class="sig sig-object py" id="app.db.models.Beneficiary.name">
 <span class="sig-name descname"><span class="pre">name</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></span><a class="headerlink" href="#app.db.models.Beneficiary.name" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Display name of the beneficiary.</p>
+</dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="app.db.models.Beneficiary.rib">
 <span class="sig-name descname"><span class="pre">rib</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></span><a class="headerlink" href="#app.db.models.Beneficiary.rib" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Bank RIB of the beneficiary.</p>
+</dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="app.db.models.Beneficiary.user">
 <span class="sig-name descname"><span class="pre">user</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Mapped</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#app.db.models.User" title="app.db.models.User"><span class="pre">User</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#app.db.models.Beneficiary.user" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Associated user.</p>
+</dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="app.db.models.Beneficiary.user_id">
 <span class="sig-name descname"><span class="pre">user_id</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></span><a class="headerlink" href="#app.db.models.Beneficiary.user_id" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Identifier of the user owning this beneficiary.</p>
+</dd></dl>
 
 </dd></dl>
 
@@ -204,30 +332,37 @@
 <dt class="sig sig-object py" id="app.db.models.Deposit">
 <span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">app.db.models.</span></span><span class="sig-name descname"><span class="pre">Deposit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">account_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">amount</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'deposit'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">date</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">datetime</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/db/models.html#Deposit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#app.db.models.Deposit" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">SQLModel</span></code></p>
+<p>Deposit entity.</p>
+<p>Represents a deposit operation performed on an account.</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="app.db.models.Deposit.account">
 <span class="sig-name descname"><span class="pre">account</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Mapped</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#app.db.models.Account" title="app.db.models.Account"><span class="pre">Account</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#app.db.models.Deposit.account" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Related account.</p>
+</dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="app.db.models.Deposit.account_id">
 <span class="sig-name descname"><span class="pre">account_id</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></span><a class="headerlink" href="#app.db.models.Deposit.account_id" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Associated account identifier.</p>
+</dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="app.db.models.Deposit.amount">
 <span class="sig-name descname"><span class="pre">amount</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></span><a class="headerlink" href="#app.db.models.Deposit.amount" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Deposit amount.</p>
+</dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="app.db.models.Deposit.date">
 <span class="sig-name descname"><span class="pre">date</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">datetime</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#app.db.models.Deposit.date" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Deposit date.</p>
+</dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="app.db.models.Deposit.id">
 <span class="sig-name descname"><span class="pre">id</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></span><a class="headerlink" href="#app.db.models.Deposit.id" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Unique identifier of the deposit.</p>
+</dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="app.db.models.Deposit.model_config">
@@ -238,7 +373,8 @@
 <dl class="py attribute">
 <dt class="sig sig-object py" id="app.db.models.Deposit.type">
 <span class="sig-name descname"><span class="pre">type</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></span><a class="headerlink" href="#app.db.models.Deposit.type" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Operation type.</p>
+</dd></dl>
 
 </dd></dl>
 
@@ -246,30 +382,37 @@
 <dt class="sig sig-object py" id="app.db.models.Transfer">
 <span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">app.db.models.</span></span><span class="sig-name descname"><span class="pre">Transfer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">from_account_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">to_account_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">amount</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">status</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'pending'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'transfer'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">date</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">datetime</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/db/models.html#Transfer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#app.db.models.Transfer" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">SQLModel</span></code></p>
+<p>Transfer entity.</p>
+<p>Represents a transfer operation between two accounts.</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="app.db.models.Transfer.amount">
 <span class="sig-name descname"><span class="pre">amount</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></span><a class="headerlink" href="#app.db.models.Transfer.amount" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Transfer amount.</p>
+</dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="app.db.models.Transfer.date">
 <span class="sig-name descname"><span class="pre">date</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">datetime</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#app.db.models.Transfer.date" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Transfer creation date.</p>
+</dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="app.db.models.Transfer.from_account">
 <span class="sig-name descname"><span class="pre">from_account</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Mapped</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#app.db.models.Account" title="app.db.models.Account"><span class="pre">Account</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#app.db.models.Transfer.from_account" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Sender account.</p>
+</dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="app.db.models.Transfer.from_account_id">
 <span class="sig-name descname"><span class="pre">from_account_id</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></span><a class="headerlink" href="#app.db.models.Transfer.from_account_id" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Sender account identifier.</p>
+</dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="app.db.models.Transfer.id">
 <span class="sig-name descname"><span class="pre">id</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></span><a class="headerlink" href="#app.db.models.Transfer.id" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Unique identifier of the transfer.</p>
+</dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="app.db.models.Transfer.model_config">
@@ -280,22 +423,26 @@
 <dl class="py attribute">
 <dt class="sig sig-object py" id="app.db.models.Transfer.status">
 <span class="sig-name descname"><span class="pre">status</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></span><a class="headerlink" href="#app.db.models.Transfer.status" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Transfer status (pending, completed, aborted).</p>
+</dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="app.db.models.Transfer.to_account">
 <span class="sig-name descname"><span class="pre">to_account</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Mapped</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#app.db.models.Account" title="app.db.models.Account"><span class="pre">Account</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#app.db.models.Transfer.to_account" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Recipient account.</p>
+</dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="app.db.models.Transfer.to_account_id">
 <span class="sig-name descname"><span class="pre">to_account_id</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></span><a class="headerlink" href="#app.db.models.Transfer.to_account_id" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Recipient account identifier.</p>
+</dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="app.db.models.Transfer.type">
 <span class="sig-name descname"><span class="pre">type</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></span><a class="headerlink" href="#app.db.models.Transfer.type" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Operation type.</p>
+</dd></dl>
 
 </dd></dl>
 
@@ -303,20 +450,25 @@
 <dt class="sig sig-object py" id="app.db.models.User">
 <span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">app.db.models.</span></span><span class="sig-name descname"><span class="pre">User</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">email</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">password</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/db/models.html#User"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#app.db.models.User" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">SQLModel</span></code></p>
+<p>User entity.</p>
+<p>Represents an application user who owns accounts and beneficiaries.</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="app.db.models.User.beneficiaries">
 <span class="sig-name descname"><span class="pre">beneficiaries</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Mapped</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#app.db.models.Beneficiary" title="app.db.models.Beneficiary"><span class="pre">Beneficiary</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#app.db.models.User.beneficiaries" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>List of beneficiaries associated with the user.</p>
+</dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="app.db.models.User.email">
 <span class="sig-name descname"><span class="pre">email</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></span><a class="headerlink" href="#app.db.models.User.email" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>User email address.</p>
+</dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="app.db.models.User.id">
 <span class="sig-name descname"><span class="pre">id</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#app.db.models.User.id" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Unique identifier of the user.</p>
+</dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="app.db.models.User.model_config">
@@ -327,12 +479,14 @@
 <dl class="py attribute">
 <dt class="sig sig-object py" id="app.db.models.User.name">
 <span class="sig-name descname"><span class="pre">name</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></span><a class="headerlink" href="#app.db.models.User.name" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>User full name.</p>
+</dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="app.db.models.User.password">
 <span class="sig-name descname"><span class="pre">password</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></span><a class="headerlink" href="#app.db.models.User.password" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Hashed user password.</p>
+</dd></dl>
 
 </dd></dl>
 
@@ -340,30 +494,37 @@
 <dt class="sig sig-object py" id="app.db.models.Withdraw">
 <span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">app.db.models.</span></span><span class="sig-name descname"><span class="pre">Withdraw</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">account_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">amount</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'withdraw'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">date</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">datetime</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/db/models.html#Withdraw"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#app.db.models.Withdraw" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">SQLModel</span></code></p>
+<p>Withdraw entity.</p>
+<p>Represents a withdrawal operation from an account.</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="app.db.models.Withdraw.account">
 <span class="sig-name descname"><span class="pre">account</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Mapped</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#app.db.models.Account" title="app.db.models.Account"><span class="pre">Account</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#app.db.models.Withdraw.account" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Related account.</p>
+</dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="app.db.models.Withdraw.account_id">
 <span class="sig-name descname"><span class="pre">account_id</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></span><a class="headerlink" href="#app.db.models.Withdraw.account_id" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Associated account identifier.</p>
+</dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="app.db.models.Withdraw.amount">
 <span class="sig-name descname"><span class="pre">amount</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></span><a class="headerlink" href="#app.db.models.Withdraw.amount" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Withdrawal amount.</p>
+</dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="app.db.models.Withdraw.date">
 <span class="sig-name descname"><span class="pre">date</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">datetime</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#app.db.models.Withdraw.date" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Withdrawal date.</p>
+</dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="app.db.models.Withdraw.id">
 <span class="sig-name descname"><span class="pre">id</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></span><a class="headerlink" href="#app.db.models.Withdraw.id" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Unique identifier of the withdrawal.</p>
+</dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="app.db.models.Withdraw.model_config">
@@ -374,7 +535,8 @@
 <dl class="py attribute">
 <dt class="sig sig-object py" id="app.db.models.Withdraw.type">
 <span class="sig-name descname"><span class="pre">type</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></span><a class="headerlink" href="#app.db.models.Withdraw.type" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Operation type.</p>
+</dd></dl>
 
 </dd></dl>
 
@@ -410,11 +572,24 @@
     </div>
 </search>
 <script>document.getElementById('searchbox').style.display = "block"</script><h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">app</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="app.html">app package</a></li>
+</ul>
+</li>
+</ul>
 
 <div class="relations">
 <h3>Related Topics</h3>
 <ul>
   <li><a href="index.html">Documentation overview</a><ul>
+  <li><a href="modules.html">app</a><ul>
+  <li><a href="app.html">app package</a><ul>
+      <li>Previous: <a href="app.core.html" title="previous chapter">app.core package</a></li>
+      <li>Next: <a href="app.repositories.html" title="next chapter">app.repositories package</a></li>
+  </ul></li>
+  </ul></li>
   </ul></li>
 </ul>
 </div>

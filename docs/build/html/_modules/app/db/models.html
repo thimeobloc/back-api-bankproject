@@ -31,7 +31,16 @@
           <div class="body" role="main">
             
   <h1>Source code for app.db.models</h1><div class="highlight"><pre>
-<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">datetime</span>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Database models definition.</span>
+
+<span class="sd">This module defines all SQLModel entities used by the application,</span>
+<span class="sd">including users, accounts, beneficiaries, deposits, withdrawals,</span>
+<span class="sd">and transfers. These models represent the database schema and</span>
+<span class="sd">their relationships.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">datetime</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">List</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">sqlmodel</span><span class="w"> </span><span class="kn">import</span> <span class="n">SQLModel</span><span class="p">,</span> <span class="n">Field</span><span class="p">,</span> <span class="n">Column</span><span class="p">,</span> <span class="n">TIMESTAMP</span><span class="p">,</span> <span class="n">text</span><span class="p">,</span> <span class="n">Relationship</span>
 
@@ -39,43 +48,115 @@
 <span class="c1"># Constants</span>
 <span class="c1"># ---------------------------</span>
 <span class="n">ACCOUNTS_TABLE_ID</span> <span class="o">=</span> <span class="s2">&quot;accounts.id&quot;</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Foreign key reference to the accounts table primary key.</span>
+<span class="sd">&quot;&quot;&quot;</span>
 
+<span class="c1"># ---------------------------</span>
+<span class="c1"># User model</span>
+<span class="c1"># ---------------------------</span>
 <div class="viewcode-block" id="User">
 <a class="viewcode-back" href="../../../app.db.html#app.db.models.User">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">User</span><span class="p">(</span><span class="n">SQLModel</span><span class="p">,</span> <span class="n">table</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    User entity.</span>
+
+<span class="sd">    Represents an application user who owns accounts and beneficiaries.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
     <span class="n">__tablename__</span> <span class="o">=</span> <span class="s2">&quot;users&quot;</span>
+
     <span class="nb">id</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">primary_key</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Unique identifier of the user.&quot;&quot;&quot;</span>
+
     <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;User full name.&quot;&quot;&quot;</span>
+
     <span class="n">email</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;User email address.&quot;&quot;&quot;</span>
+
     <span class="n">password</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-    <span class="n">beneficiaries</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="s2">&quot;Beneficiary&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">Relationship</span><span class="p">(</span><span class="n">back_populates</span><span class="o">=</span><span class="s2">&quot;user&quot;</span><span class="p">)</span></div>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Hashed user password.&quot;&quot;&quot;</span>
+
+    <span class="n">beneficiaries</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="s2">&quot;Beneficiary&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">Relationship</span><span class="p">(</span><span class="n">back_populates</span><span class="o">=</span><span class="s2">&quot;user&quot;</span><span class="p">)</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;List of beneficiaries associated with the user.&quot;&quot;&quot;</span></div>
 
 
+<span class="c1"># ---------------------------</span>
+<span class="c1"># Beneficiary model</span>
+<span class="c1"># ---------------------------</span>
 <div class="viewcode-block" id="Beneficiary">
 <a class="viewcode-back" href="../../../app.db.html#app.db.models.Beneficiary">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">Beneficiary</span><span class="p">(</span><span class="n">SQLModel</span><span class="p">,</span> <span class="n">table</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Beneficiary entity.</span>
+
+<span class="sd">    Represents a beneficiary that can receive transfers from an account.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
     <span class="n">__tablename__</span> <span class="o">=</span> <span class="s2">&quot;beneficiaries&quot;</span>
+
     <span class="nb">id</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">primary_key</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Unique identifier of the beneficiary.&quot;&quot;&quot;</span>
+
     <span class="n">rib</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Bank RIB of the beneficiary.&quot;&quot;&quot;</span>
+
     <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Display name of the beneficiary.&quot;&quot;&quot;</span>
+
     <span class="n">user_id</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">foreign_key</span><span class="o">=</span><span class="s2">&quot;users.id&quot;</span><span class="p">)</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Identifier of the user owning this beneficiary.&quot;&quot;&quot;</span>
+
     <span class="n">account_id</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">foreign_key</span><span class="o">=</span><span class="n">ACCOUNTS_TABLE_ID</span><span class="p">)</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Identifier of the linked account.&quot;&quot;&quot;</span>
+
     <span class="n">user</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">User</span><span class="p">]</span> <span class="o">=</span> <span class="n">Relationship</span><span class="p">(</span><span class="n">back_populates</span><span class="o">=</span><span class="s2">&quot;beneficiaries&quot;</span><span class="p">)</span>
-    <span class="n">account</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="s2">&quot;Account&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">Relationship</span><span class="p">(</span><span class="n">back_populates</span><span class="o">=</span><span class="s2">&quot;beneficiaries&quot;</span><span class="p">)</span></div>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Associated user.&quot;&quot;&quot;</span>
+
+    <span class="n">account</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="s2">&quot;Account&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">Relationship</span><span class="p">(</span><span class="n">back_populates</span><span class="o">=</span><span class="s2">&quot;beneficiaries&quot;</span><span class="p">)</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Associated account.&quot;&quot;&quot;</span></div>
 
 
+<span class="c1"># ---------------------------</span>
+<span class="c1"># Account model</span>
+<span class="c1"># ---------------------------</span>
 <div class="viewcode-block" id="Account">
 <a class="viewcode-back" href="../../../app.db.html#app.db.models.Account">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">Account</span><span class="p">(</span><span class="n">SQLModel</span><span class="p">,</span> <span class="n">table</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Bank account entity.</span>
+
+<span class="sd">    Represents a user bank account used for deposits, withdrawals,</span>
+<span class="sd">    and transfers.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
     <span class="n">__tablename__</span> <span class="o">=</span> <span class="s2">&quot;accounts&quot;</span>
+
     <span class="nb">id</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">primary_key</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Unique identifier of the account.&quot;&quot;&quot;</span>
+
     <span class="n">user_id</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">foreign_key</span><span class="o">=</span><span class="s2">&quot;users.id&quot;</span><span class="p">)</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Owner user identifier.&quot;&quot;&quot;</span>
+
     <span class="n">balance</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Current account balance.&quot;&quot;&quot;</span>
+
     <span class="n">main</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Indicates whether this account is the main account.&quot;&quot;&quot;</span>
+
     <span class="n">closed</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Indicates whether the account is closed.&quot;&quot;&quot;</span>
+
     <span class="n">status</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Indicates whether the account has ongoing operations.&quot;&quot;&quot;</span>
+
     <span class="n">rib</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Bank RIB of the account.&quot;&quot;&quot;</span>
+
     <span class="nb">type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="s2">&quot;Compte courant&quot;</span><span class="p">)</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Type of account (e.g., current account).&quot;&quot;&quot;</span>
+
     <span class="n">date</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">datetime</span><span class="p">]</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span>
         <span class="n">sa_column</span><span class="o">=</span><span class="n">Column</span><span class="p">(</span>
             <span class="n">TIMESTAMP</span><span class="p">(</span><span class="n">timezone</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
@@ -83,68 +164,148 @@
             <span class="n">server_default</span><span class="o">=</span><span class="n">text</span><span class="p">(</span><span class="s2">&quot;CURRENT_TIMESTAMP&quot;</span><span class="p">)</span>
         <span class="p">)</span>
     <span class="p">)</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Account creation date.&quot;&quot;&quot;</span>
+
     <span class="n">deposits</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="s2">&quot;Deposit&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">Relationship</span><span class="p">(</span><span class="n">back_populates</span><span class="o">=</span><span class="s2">&quot;account&quot;</span><span class="p">)</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;List of deposits made on this account.&quot;&quot;&quot;</span>
+
     <span class="n">withdraws</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="s2">&quot;Withdraw&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">Relationship</span><span class="p">(</span><span class="n">back_populates</span><span class="o">=</span><span class="s2">&quot;account&quot;</span><span class="p">)</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;List of withdrawals made from this account.&quot;&quot;&quot;</span>
+
     <span class="n">transfers_sent</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="s2">&quot;Transfer&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">Relationship</span><span class="p">(</span>
         <span class="n">back_populates</span><span class="o">=</span><span class="s2">&quot;from_account&quot;</span><span class="p">,</span>
         <span class="n">sa_relationship_kwargs</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;foreign_keys&quot;</span><span class="p">:</span> <span class="s2">&quot;Transfer.from_account_id&quot;</span><span class="p">}</span>
     <span class="p">)</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Transfers sent from this account.&quot;&quot;&quot;</span>
+
     <span class="n">transfers_received</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="s2">&quot;Transfer&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">Relationship</span><span class="p">(</span>
         <span class="n">back_populates</span><span class="o">=</span><span class="s2">&quot;to_account&quot;</span><span class="p">,</span>
         <span class="n">sa_relationship_kwargs</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;foreign_keys&quot;</span><span class="p">:</span> <span class="s2">&quot;Transfer.to_account_id&quot;</span><span class="p">}</span>
     <span class="p">)</span>
-    <span class="n">beneficiaries</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="s2">&quot;Beneficiary&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">Relationship</span><span class="p">(</span><span class="n">back_populates</span><span class="o">=</span><span class="s2">&quot;account&quot;</span><span class="p">)</span></div>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Transfers received by this account.&quot;&quot;&quot;</span>
+
+    <span class="n">beneficiaries</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="s2">&quot;Beneficiary&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">Relationship</span><span class="p">(</span><span class="n">back_populates</span><span class="o">=</span><span class="s2">&quot;account&quot;</span><span class="p">)</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Beneficiaries linked to this account.&quot;&quot;&quot;</span></div>
 
 
+<span class="c1"># ---------------------------</span>
+<span class="c1"># Deposit model</span>
+<span class="c1"># ---------------------------</span>
 <div class="viewcode-block" id="Deposit">
 <a class="viewcode-back" href="../../../app.db.html#app.db.models.Deposit">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">Deposit</span><span class="p">(</span><span class="n">SQLModel</span><span class="p">,</span> <span class="n">table</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Deposit entity.</span>
+
+<span class="sd">    Represents a deposit operation performed on an account.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
     <span class="n">__tablename__</span> <span class="o">=</span> <span class="s2">&quot;deposits&quot;</span>
+
     <span class="nb">id</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">primary_key</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Unique identifier of the deposit.&quot;&quot;&quot;</span>
+
     <span class="n">account_id</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">foreign_key</span><span class="o">=</span><span class="n">ACCOUNTS_TABLE_ID</span><span class="p">)</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Associated account identifier.&quot;&quot;&quot;</span>
+
     <span class="n">amount</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Deposit amount.&quot;&quot;&quot;</span>
+
     <span class="nb">type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="s2">&quot;deposit&quot;</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Operation type.&quot;&quot;&quot;</span>
+
     <span class="n">date</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">datetime</span><span class="p">]</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span>
         <span class="n">sa_column</span><span class="o">=</span><span class="n">Column</span><span class="p">(</span><span class="n">TIMESTAMP</span><span class="p">(</span><span class="n">timezone</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span> <span class="n">nullable</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">server_default</span><span class="o">=</span><span class="n">text</span><span class="p">(</span><span class="s2">&quot;CURRENT_TIMESTAMP&quot;</span><span class="p">))</span>
     <span class="p">)</span>
-    <span class="n">account</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Account</span><span class="p">]</span> <span class="o">=</span> <span class="n">Relationship</span><span class="p">(</span><span class="n">back_populates</span><span class="o">=</span><span class="s2">&quot;deposits&quot;</span><span class="p">)</span></div>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Deposit date.&quot;&quot;&quot;</span>
+
+    <span class="n">account</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Account</span><span class="p">]</span> <span class="o">=</span> <span class="n">Relationship</span><span class="p">(</span><span class="n">back_populates</span><span class="o">=</span><span class="s2">&quot;deposits&quot;</span><span class="p">)</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Related account.&quot;&quot;&quot;</span></div>
 
 
+<span class="c1"># ---------------------------</span>
+<span class="c1"># Withdraw model</span>
+<span class="c1"># ---------------------------</span>
 <div class="viewcode-block" id="Withdraw">
 <a class="viewcode-back" href="../../../app.db.html#app.db.models.Withdraw">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">Withdraw</span><span class="p">(</span><span class="n">SQLModel</span><span class="p">,</span> <span class="n">table</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Withdraw entity.</span>
+
+<span class="sd">    Represents a withdrawal operation from an account.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
     <span class="n">__tablename__</span> <span class="o">=</span> <span class="s2">&quot;withdraws&quot;</span>
+
     <span class="nb">id</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">primary_key</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Unique identifier of the withdrawal.&quot;&quot;&quot;</span>
+
     <span class="n">account_id</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">foreign_key</span><span class="o">=</span><span class="n">ACCOUNTS_TABLE_ID</span><span class="p">)</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Associated account identifier.&quot;&quot;&quot;</span>
+
     <span class="n">amount</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Withdrawal amount.&quot;&quot;&quot;</span>
+
     <span class="nb">type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="s2">&quot;withdraw&quot;</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Operation type.&quot;&quot;&quot;</span>
+
     <span class="n">date</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">datetime</span><span class="p">]</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span>
         <span class="n">sa_column</span><span class="o">=</span><span class="n">Column</span><span class="p">(</span><span class="n">TIMESTAMP</span><span class="p">(</span><span class="n">timezone</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span> <span class="n">nullable</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">server_default</span><span class="o">=</span><span class="n">text</span><span class="p">(</span><span class="s2">&quot;CURRENT_TIMESTAMP&quot;</span><span class="p">))</span>
     <span class="p">)</span>
-    <span class="n">account</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Account</span><span class="p">]</span> <span class="o">=</span> <span class="n">Relationship</span><span class="p">(</span><span class="n">back_populates</span><span class="o">=</span><span class="s2">&quot;withdraws&quot;</span><span class="p">)</span></div>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Withdrawal date.&quot;&quot;&quot;</span>
+
+    <span class="n">account</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Account</span><span class="p">]</span> <span class="o">=</span> <span class="n">Relationship</span><span class="p">(</span><span class="n">back_populates</span><span class="o">=</span><span class="s2">&quot;withdraws&quot;</span><span class="p">)</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Related account.&quot;&quot;&quot;</span></div>
 
 
+<span class="c1"># ---------------------------</span>
+<span class="c1"># Transfer model</span>
+<span class="c1"># ---------------------------</span>
 <div class="viewcode-block" id="Transfer">
 <a class="viewcode-back" href="../../../app.db.html#app.db.models.Transfer">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">Transfer</span><span class="p">(</span><span class="n">SQLModel</span><span class="p">,</span> <span class="n">table</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Transfer entity.</span>
+
+<span class="sd">    Represents a transfer operation between two accounts.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
     <span class="n">__tablename__</span> <span class="o">=</span> <span class="s2">&quot;transfers&quot;</span>
+
     <span class="nb">id</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">primary_key</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Unique identifier of the transfer.&quot;&quot;&quot;</span>
+
     <span class="n">from_account_id</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">foreign_key</span><span class="o">=</span><span class="n">ACCOUNTS_TABLE_ID</span><span class="p">)</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Sender account identifier.&quot;&quot;&quot;</span>
+
     <span class="n">to_account_id</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">foreign_key</span><span class="o">=</span><span class="n">ACCOUNTS_TABLE_ID</span><span class="p">)</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Recipient account identifier.&quot;&quot;&quot;</span>
+
     <span class="n">amount</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Transfer amount.&quot;&quot;&quot;</span>
+
     <span class="n">status</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="s2">&quot;pending&quot;</span><span class="p">)</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Transfer status (pending, completed, aborted).&quot;&quot;&quot;</span>
+
     <span class="nb">type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="s2">&quot;transfer&quot;</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Operation type.&quot;&quot;&quot;</span>
+
     <span class="n">date</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">datetime</span><span class="p">]</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span>
         <span class="n">sa_column</span><span class="o">=</span><span class="n">Column</span><span class="p">(</span><span class="n">TIMESTAMP</span><span class="p">(</span><span class="n">timezone</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span> <span class="n">nullable</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">server_default</span><span class="o">=</span><span class="n">text</span><span class="p">(</span><span class="s2">&quot;CURRENT_TIMESTAMP&quot;</span><span class="p">))</span>
     <span class="p">)</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Transfer creation date.&quot;&quot;&quot;</span>
+
     <span class="n">from_account</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Account</span><span class="p">]</span> <span class="o">=</span> <span class="n">Relationship</span><span class="p">(</span>
         <span class="n">back_populates</span><span class="o">=</span><span class="s2">&quot;transfers_sent&quot;</span><span class="p">,</span>
         <span class="n">sa_relationship_kwargs</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;foreign_keys&quot;</span><span class="p">:</span> <span class="s2">&quot;Transfer.from_account_id&quot;</span><span class="p">}</span>
     <span class="p">)</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Sender account.&quot;&quot;&quot;</span>
+
     <span class="n">to_account</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Account</span><span class="p">]</span> <span class="o">=</span> <span class="n">Relationship</span><span class="p">(</span>
         <span class="n">back_populates</span><span class="o">=</span><span class="s2">&quot;transfers_received&quot;</span><span class="p">,</span>
         <span class="n">sa_relationship_kwargs</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;foreign_keys&quot;</span><span class="p">:</span> <span class="s2">&quot;Transfer.to_account_id&quot;</span><span class="p">}</span>
-    <span class="p">)</span></div>
+    <span class="p">)</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Recipient account.&quot;&quot;&quot;</span></div>
 
 </pre></div>
 
@@ -173,6 +334,10 @@
     </div>
 </search>
 <script>document.getElementById('searchbox').style.display = "block"</script><h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules.html">app</a></li>
+</ul>
 
 <div class="relations">
 <h3>Related Topics</h3>

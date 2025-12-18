@@ -14,6 +14,8 @@
     <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="app.db package" href="app.db.html" />
+    <link rel="prev" title="app.api package" href="app.api.html" />
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
   
@@ -41,30 +43,134 @@
 </section>
 <section id="module-app.core.security">
 <span id="app-core-security-module"></span><h2>app.core.security module<a class="headerlink" href="#module-app.core.security" title="Link to this heading">¶</a></h2>
+<p>Security and authentication utilities.</p>
+<p>This module provides helper functions and configurations related to
+authentication, password handling, JWT token generation, and basic
+amount validation used across the API.</p>
+<dl class="py data">
+<dt class="sig sig-object py" id="app.core.security.ALGORITHM">
+<span class="sig-prename descclassname"><span class="pre">app.core.security.</span></span><span class="sig-name descname"><span class="pre">ALGORITHM</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'HS256'</span></span><a class="headerlink" href="#app.core.security.ALGORITHM" title="Link to this definition">¶</a></dt>
+<dd><p>JWT signing algorithm.</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="app.core.security.SECRET_KEY">
+<span class="sig-prename descclassname"><span class="pre">app.core.security.</span></span><span class="sig-name descname"><span class="pre">SECRET_KEY</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'super_secret_key'</span></span><a class="headerlink" href="#app.core.security.SECRET_KEY" title="Link to this definition">¶</a></dt>
+<dd><p>Secret key used to sign JWT tokens.</p>
+</dd></dl>
+
 <dl class="py function">
 <dt class="sig sig-object py" id="app.core.security.amount_verification">
 <span class="sig-prename descclassname"><span class="pre">app.core.security.</span></span><span class="sig-name descname"><span class="pre">amount_verification</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">amount</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/core/security.html#amount_verification"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#app.core.security.amount_verification" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Validate that an amount is non-negative.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>amount</strong> (<em>float</em>) – Amount to validate.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>True if the amount is greater than or equal to zero.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="app.core.security.create_access_token">
 <span class="sig-prename descclassname"><span class="pre">app.core.security.</span></span><span class="sig-name descname"><span class="pre">create_access_token</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">expires_delta</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">timedelta</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/core/security.html#create_access_token"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#app.core.security.create_access_token" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Create a JWT access token.</p>
+<p>The token contains the provided payload data and an expiration date.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>dict</em>) – Payload data to encode into the token.</p></li>
+<li><p><strong>expires_delta</strong> (<em>timedelta</em><em> | </em><em>None</em>) – Optional custom expiration duration.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Encoded JWT access token.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="app.core.security.enough_amount">
 <span class="sig-prename descclassname"><span class="pre">app.core.security.</span></span><span class="sig-name descname"><span class="pre">enough_amount</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">amount</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">balance</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/core/security.html#enough_amount"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#app.core.security.enough_amount" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Check if the balance is sufficient for an operation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>amount</strong> (<em>float</em>) – Requested amount.</p></li>
+<li><p><strong>balance</strong> (<em>float</em>) – Available account balance.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>True if the balance is sufficient.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="app.core.security.hash_password">
 <span class="sig-prename descclassname"><span class="pre">app.core.security.</span></span><span class="sig-name descname"><span class="pre">hash_password</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">password</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="reference internal" href="_modules/app/core/security.html#hash_password"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#app.core.security.hash_password" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Hash a plaintext password.</p>
+<p>The password is hashed using SHA-256 before being stored
+in the database.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>password</strong> (<em>str</em>) – Plaintext password.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>SHA-256 hashed password.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="app.core.security.oauth2_scheme">
+<span class="sig-prename descclassname"><span class="pre">app.core.security.</span></span><span class="sig-name descname"><span class="pre">oauth2_scheme</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;fastapi.security.oauth2.OAuth2PasswordBearer</span> <span class="pre">object&gt;</span></span><a class="headerlink" href="#app.core.security.oauth2_scheme" title="Link to this definition">¶</a></dt>
+<dd><p>OAuth2 password bearer scheme.</p>
+<p>This dependency extracts and validates the JWT access token
+from the Authorization header.</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="app.core.security.ph">
+<span class="sig-prename descclassname"><span class="pre">app.core.security.</span></span><span class="sig-name descname"><span class="pre">ph</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;argon2._password_hasher.PasswordHasher</span> <span class="pre">object&gt;</span></span><a class="headerlink" href="#app.core.security.ph" title="Link to this definition">¶</a></dt>
+<dd><p>Password hasher instance.</p>
+<p>Currently not used directly, but reserved for future
+strong password hashing mechanisms.</p>
+</dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="app.core.security.verify_password">
 <span class="sig-prename descclassname"><span class="pre">app.core.security.</span></span><span class="sig-name descname"><span class="pre">verify_password</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">password</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hashed</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="reference internal" href="_modules/app/core/security.html#verify_password"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#app.core.security.verify_password" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Verify a plaintext password against a hashed password.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>password</strong> (<em>str</em>) – Plaintext password provided by the user.</p></li>
+<li><p><strong>hashed</strong> (<em>str</em>) – Stored hashed password.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>True if the password matches, False otherwise.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
 
 </section>
 <section id="module-app.core">
@@ -98,11 +204,24 @@
     </div>
 </search>
 <script>document.getElementById('searchbox').style.display = "block"</script><h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">app</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="app.html">app package</a></li>
+</ul>
+</li>
+</ul>
 
 <div class="relations">
 <h3>Related Topics</h3>
 <ul>
   <li><a href="index.html">Documentation overview</a><ul>
+  <li><a href="modules.html">app</a><ul>
+  <li><a href="app.html">app package</a><ul>
+      <li>Previous: <a href="app.api.html" title="previous chapter">app.api package</a></li>
+      <li>Next: <a href="app.db.html" title="next chapter">app.db package</a></li>
+  </ul></li>
+  </ul></li>
   </ul></li>
 </ul>
 </div>

@@ -31,25 +31,62 @@
           <div class="body" role="main">
             
   <h1>Source code for app.db.database</h1><div class="highlight"><pre>
-<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">sqlmodel</span><span class="w"> </span><span class="kn">import</span> <span class="n">SQLModel</span><span class="p">,</span> <span class="n">create_engine</span><span class="p">,</span> <span class="n">Session</span><span class="p">,</span> <span class="n">select</span>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Database configuration and session utilities.</span>
+
+<span class="sd">This module configures the SQLModel database engines, provides session</span>
+<span class="sd">dependencies for FastAPI, initializes database schemas, and exposes</span>
+<span class="sd">helper functions to retrieve database entities.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">sqlmodel</span><span class="w"> </span><span class="kn">import</span> <span class="n">SQLModel</span><span class="p">,</span> <span class="n">create_engine</span><span class="p">,</span> <span class="n">Session</span><span class="p">,</span> <span class="n">select</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">app.db.models</span><span class="w"> </span><span class="kn">import</span> <span class="n">User</span><span class="p">,</span> <span class="n">Account</span><span class="p">,</span> <span class="n">Deposit</span><span class="p">,</span> <span class="n">Withdraw</span><span class="p">,</span> <span class="n">Transfer</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">fastapi</span><span class="w"> </span><span class="kn">import</span> <span class="n">Depends</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">sqlalchemy.pool</span><span class="w"> </span><span class="kn">import</span> <span class="n">StaticPool</span>
 
 <span class="n">DATABASE_URL</span> <span class="o">=</span> <span class="s2">&quot;sqlite:///database.db&quot;</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Main database connection URL.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
 <span class="n">engine</span> <span class="o">=</span> <span class="n">create_engine</span><span class="p">(</span><span class="n">DATABASE_URL</span><span class="p">,</span> <span class="n">echo</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Primary SQLModel engine for the production database.</span>
+<span class="sd">&quot;&quot;&quot;</span>
 
 <span class="n">TEST_DATABASE_URL</span> <span class="o">=</span> <span class="s2">&quot;sqlite:///:memory:&quot;</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">In-memory SQLite database URL used for testing.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
 <span class="n">test_engine</span> <span class="o">=</span> <span class="n">create_engine</span><span class="p">(</span>
     <span class="n">TEST_DATABASE_URL</span><span class="p">,</span>
     <span class="n">echo</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
     <span class="n">connect_args</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;check_same_thread&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">},</span>
     <span class="n">poolclass</span><span class="o">=</span><span class="n">StaticPool</span>
 <span class="p">)</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">SQLModel engine configured for test execution.</span>
 
+<span class="sd">Uses a static pool to allow multiple connections to the same</span>
+<span class="sd">in-memory database.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="c1"># ---------------------------</span>
+<span class="c1"># Session dependencies</span>
+<span class="c1"># ---------------------------</span>
 <div class="viewcode-block" id="get_session">
 <a class="viewcode-back" href="../../../app.db.html#app.db.database.get_session">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_session</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Provide a database session dependency.</span>
+
+<span class="sd">    This function is used by FastAPI to inject a database session</span>
+<span class="sd">    into request handlers.</span>
+
+<span class="sd">    Yields:</span>
+<span class="sd">        Session: Active database session.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">with</span> <span class="n">Session</span><span class="p">(</span><span class="n">engine</span><span class="p">)</span> <span class="k">as</span> <span class="n">session</span><span class="p">:</span>
         <span class="k">yield</span> <span class="n">session</span></div>
 
@@ -57,22 +94,52 @@
 <div class="viewcode-block" id="get_test_session">
 <a class="viewcode-back" href="../../../app.db.html#app.db.database.get_test_session">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_test_session</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Provide a database session for testing.</span>
+
+<span class="sd">    Yields:</span>
+<span class="sd">        Session: Active test database session.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">with</span> <span class="n">Session</span><span class="p">(</span><span class="n">test_engine</span><span class="p">)</span> <span class="k">as</span> <span class="n">session</span><span class="p">:</span>
         <span class="k">yield</span> <span class="n">session</span></div>
 
 
+<span class="c1"># ---------------------------</span>
+<span class="c1"># Database initialization</span>
+<span class="c1"># ---------------------------</span>
 <div class="viewcode-block" id="init_db">
 <a class="viewcode-back" href="../../../app.db.html#app.db.database.init_db">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">init_db</span><span class="p">(</span><span class="n">test</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Initialize the database schema.</span>
+
+<span class="sd">    Creates all database tables based on SQLModel metadata.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        test (bool): If True, initialize the test database.</span>
+<span class="sd">                     Otherwise, initialize the production database.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">test</span><span class="p">:</span>
         <span class="n">SQLModel</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">create_all</span><span class="p">(</span><span class="n">test_engine</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">SQLModel</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">create_all</span><span class="p">(</span><span class="n">engine</span><span class="p">)</span></div>
 
 
+<span class="c1"># ---------------------------</span>
+<span class="c1"># Database query helpers</span>
+<span class="c1"># ---------------------------</span>
 <div class="viewcode-block" id="users_db">
 <a class="viewcode-back" href="../../../app.db.html#app.db.database.users_db">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">users_db</span><span class="p">(</span><span class="n">session</span><span class="p">:</span> <span class="n">Session</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">get_session</span><span class="p">)):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Retrieve all users from the database.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        session (Session): Database session dependency.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        list[User]: List of user records.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">users</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">exec</span><span class="p">(</span><span class="n">select</span><span class="p">(</span><span class="n">User</span><span class="p">))</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
     <span class="k">return</span> <span class="n">users</span></div>
 
@@ -80,6 +147,15 @@
 <div class="viewcode-block" id="accounts_db">
 <a class="viewcode-back" href="../../../app.db.html#app.db.database.accounts_db">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">accounts_db</span><span class="p">(</span><span class="n">session</span><span class="p">:</span> <span class="n">Session</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">get_session</span><span class="p">)):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Retrieve all accounts from the database.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        session (Session): Database session dependency.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        list[Account]: List of account records.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">accounts</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">exec</span><span class="p">(</span><span class="n">select</span><span class="p">(</span><span class="n">Account</span><span class="p">))</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
     <span class="k">return</span> <span class="n">accounts</span></div>
 
@@ -87,6 +163,17 @@
 <div class="viewcode-block" id="balances_db">
 <a class="viewcode-back" href="../../../app.db.html#app.db.database.balances_db">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">balances_db</span><span class="p">(</span><span class="n">session</span><span class="p">:</span> <span class="n">Session</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">get_session</span><span class="p">)):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Retrieve all balance-related operations.</span>
+
+<span class="sd">    This includes deposits, withdrawals, and transfers.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        session (Session): Database session dependency.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        list: List of deposit, withdraw, and transfer records.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">balances</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">exec</span><span class="p">(</span><span class="n">select</span><span class="p">(</span><span class="n">Deposit</span><span class="p">))</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
     <span class="n">balances</span> <span class="o">+=</span> <span class="n">session</span><span class="o">.</span><span class="n">exec</span><span class="p">(</span><span class="n">select</span><span class="p">(</span><span class="n">Withdraw</span><span class="p">))</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
     <span class="n">balances</span> <span class="o">+=</span> <span class="n">session</span><span class="o">.</span><span class="n">exec</span><span class="p">(</span><span class="n">select</span><span class="p">(</span><span class="n">Transfer</span><span class="p">))</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
@@ -119,6 +206,10 @@
     </div>
 </search>
 <script>document.getElementById('searchbox').style.display = "block"</script><h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules.html">app</a></li>
+</ul>
 
 <div class="relations">
 <h3>Related Topics</h3>

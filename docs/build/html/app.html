@@ -14,6 +14,8 @@
     <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="app.api package" href="app.api.html" />
+    <link rel="prev" title="app" href="modules.html" />
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
   
@@ -82,10 +84,14 @@
 <li class="toctree-l2"><a class="reference internal" href="app.core.html#submodules">Submodules</a></li>
 <li class="toctree-l2"><a class="reference internal" href="app.core.html#module-app.core.config">app.core.config module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="app.core.html#module-app.core.security">app.core.security module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="app.core.html#app.core.security.ALGORITHM"><code class="docutils literal notranslate"><span class="pre">ALGORITHM</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="app.core.html#app.core.security.SECRET_KEY"><code class="docutils literal notranslate"><span class="pre">SECRET_KEY</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="app.core.html#app.core.security.amount_verification"><code class="docutils literal notranslate"><span class="pre">amount_verification()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="app.core.html#app.core.security.create_access_token"><code class="docutils literal notranslate"><span class="pre">create_access_token()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="app.core.html#app.core.security.enough_amount"><code class="docutils literal notranslate"><span class="pre">enough_amount()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="app.core.html#app.core.security.hash_password"><code class="docutils literal notranslate"><span class="pre">hash_password()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="app.core.html#app.core.security.oauth2_scheme"><code class="docutils literal notranslate"><span class="pre">oauth2_scheme</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="app.core.html#app.core.security.ph"><code class="docutils literal notranslate"><span class="pre">ph</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="app.core.html#app.core.security.verify_password"><code class="docutils literal notranslate"><span class="pre">verify_password()</span></code></a></li>
 </ul>
 </li>
@@ -95,15 +101,20 @@
 <li class="toctree-l1"><a class="reference internal" href="app.db.html">app.db package</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="app.db.html#submodules">Submodules</a></li>
 <li class="toctree-l2"><a class="reference internal" href="app.db.html#module-app.db.database">app.db.database module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="app.db.html#app.db.database.DATABASE_URL"><code class="docutils literal notranslate"><span class="pre">DATABASE_URL</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="app.db.html#app.db.database.TEST_DATABASE_URL"><code class="docutils literal notranslate"><span class="pre">TEST_DATABASE_URL</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="app.db.html#app.db.database.accounts_db"><code class="docutils literal notranslate"><span class="pre">accounts_db()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="app.db.html#app.db.database.balances_db"><code class="docutils literal notranslate"><span class="pre">balances_db()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="app.db.html#app.db.database.engine"><code class="docutils literal notranslate"><span class="pre">engine</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="app.db.html#app.db.database.get_session"><code class="docutils literal notranslate"><span class="pre">get_session()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="app.db.html#app.db.database.get_test_session"><code class="docutils literal notranslate"><span class="pre">get_test_session()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="app.db.html#app.db.database.init_db"><code class="docutils literal notranslate"><span class="pre">init_db()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="app.db.html#app.db.database.test_engine"><code class="docutils literal notranslate"><span class="pre">test_engine</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="app.db.html#app.db.database.users_db"><code class="docutils literal notranslate"><span class="pre">users_db()</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="app.db.html#module-app.db.models">app.db.models module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="app.db.html#app.db.models.ACCOUNTS_TABLE_ID"><code class="docutils literal notranslate"><span class="pre">ACCOUNTS_TABLE_ID</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="app.db.html#app.db.models.Account"><code class="docutils literal notranslate"><span class="pre">Account</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="app.db.html#app.db.models.Account.balance"><code class="docutils literal notranslate"><span class="pre">Account.balance</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="app.db.html#app.db.models.Account.beneficiaries"><code class="docutils literal notranslate"><span class="pre">Account.beneficiaries</span></code></a></li>
@@ -361,11 +372,22 @@
     </div>
 </search>
 <script>document.getElementById('searchbox').style.display = "block"</script><h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">app</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">app package</a></li>
+</ul>
+</li>
+</ul>
 
 <div class="relations">
 <h3>Related Topics</h3>
 <ul>
   <li><a href="index.html">Documentation overview</a><ul>
+  <li><a href="modules.html">app</a><ul>
+      <li>Previous: <a href="modules.html" title="previous chapter">app</a></li>
+      <li>Next: <a href="app.api.html" title="next chapter">app.api package</a></li>
+  </ul></li>
   </ul></li>
 </ul>
 </div>

@@ -31,37 +31,101 @@
           <div class="body" role="main">
             
   <h1>Source code for app.core.security</h1><div class="highlight"><pre>
-<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">fastapi.security</span><span class="w"> </span><span class="kn">import</span> <span class="n">OAuth2PasswordBearer</span>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Security and authentication utilities.</span>
+
+<span class="sd">This module provides helper functions and configurations related to</span>
+<span class="sd">authentication, password handling, JWT token generation, and basic</span>
+<span class="sd">amount validation used across the API.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">fastapi.security</span><span class="w"> </span><span class="kn">import</span> <span class="n">OAuth2PasswordBearer</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">argon2</span><span class="w"> </span><span class="kn">import</span> <span class="n">PasswordHasher</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">hashlib</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">jwt</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">datetime</span><span class="p">,</span> <span class="n">timedelta</span><span class="p">,</span> <span class="n">timezone</span>
 
 <span class="n">SECRET_KEY</span> <span class="o">=</span> <span class="s2">&quot;super_secret_key&quot;</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Secret key used to sign JWT tokens.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
 <span class="n">ALGORITHM</span> <span class="o">=</span> <span class="s2">&quot;HS256&quot;</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">JWT signing algorithm.</span>
+<span class="sd">&quot;&quot;&quot;</span>
 
 <span class="n">oauth2_scheme</span> <span class="o">=</span> <span class="n">OAuth2PasswordBearer</span><span class="p">(</span><span class="n">tokenUrl</span><span class="o">=</span><span class="s2">&quot;/users/login&quot;</span><span class="p">)</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">OAuth2 password bearer scheme.</span>
+
+<span class="sd">This dependency extracts and validates the JWT access token</span>
+<span class="sd">from the Authorization header.</span>
+<span class="sd">&quot;&quot;&quot;</span>
 
 <span class="n">ph</span> <span class="o">=</span> <span class="n">PasswordHasher</span><span class="p">()</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Password hasher instance.</span>
 
-<span class="c1"># hash password</span>
+<span class="sd">Currently not used directly, but reserved for future</span>
+<span class="sd">strong password hashing mechanisms.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="c1"># ---------------------------</span>
+<span class="c1"># Password utilities</span>
+<span class="c1"># ---------------------------</span>
 <div class="viewcode-block" id="hash_password">
 <a class="viewcode-back" href="../../../app.core.html#app.core.security.hash_password">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">hash_password</span><span class="p">(</span><span class="n">password</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Hash a plaintext password.</span>
+
+<span class="sd">    The password is hashed using SHA-256 before being stored</span>
+<span class="sd">    in the database.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        password (str): Plaintext password.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        str: SHA-256 hashed password.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">hashlib</span><span class="o">.</span><span class="n">sha256</span><span class="p">(</span><span class="n">password</span><span class="o">.</span><span class="n">encode</span><span class="p">())</span><span class="o">.</span><span class="n">hexdigest</span><span class="p">()</span></div>
 
 
-<span class="c1"># verify password</span>
 <div class="viewcode-block" id="verify_password">
 <a class="viewcode-back" href="../../../app.core.html#app.core.security.verify_password">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">verify_password</span><span class="p">(</span><span class="n">password</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">hashed</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Verify a plaintext password against a hashed password.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        password (str): Plaintext password provided by the user.</span>
+<span class="sd">        hashed (str): Stored hashed password.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        bool: True if the password matches, False otherwise.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">hash_password</span><span class="p">(</span><span class="n">password</span><span class="p">)</span> <span class="o">==</span> <span class="n">hashed</span></div>
 
 
-<span class="c1"># JWT generator</span>
+<span class="c1"># ---------------------------</span>
+<span class="c1"># JWT utilities</span>
+<span class="c1"># ---------------------------</span>
 <div class="viewcode-block" id="create_access_token">
 <a class="viewcode-back" href="../../../app.core.html#app.core.security.create_access_token">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">create_access_token</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">expires_delta</span><span class="p">:</span> <span class="n">timedelta</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Create a JWT access token.</span>
+
+<span class="sd">    The token contains the provided payload data and an expiration date.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        data (dict): Payload data to encode into the token.</span>
+<span class="sd">        expires_delta (timedelta | None): Optional custom expiration duration.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        str: Encoded JWT access token.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">to_encode</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
     <span class="n">expire</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">(</span><span class="n">timezone</span><span class="o">.</span><span class="n">utc</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="n">expires_delta</span> <span class="ow">or</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">hours</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>
     <span class="n">to_encode</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">&quot;exp&quot;</span><span class="p">:</span> <span class="n">expire</span><span class="p">})</span>
@@ -69,15 +133,37 @@
     <span class="k">return</span> <span class="n">encoded_jwt</span></div>
 
 
+<span class="c1"># ---------------------------</span>
+<span class="c1"># Amount validation utilities</span>
+<span class="c1"># ---------------------------</span>
 <div class="viewcode-block" id="amount_verification">
 <a class="viewcode-back" href="../../../app.core.html#app.core.security.amount_verification">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">amount_verification</span><span class="p">(</span><span class="n">amount</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Validate that an amount is non-negative.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        amount (float): Amount to validate.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        bool: True if the amount is greater than or equal to zero.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">amount</span> <span class="o">&gt;=</span> <span class="mi">0</span></div>
 
 
 <div class="viewcode-block" id="enough_amount">
 <a class="viewcode-back" href="../../../app.core.html#app.core.security.enough_amount">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">enough_amount</span><span class="p">(</span><span class="n">amount</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">balance</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Check if the balance is sufficient for an operation.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        amount (float): Requested amount.</span>
+<span class="sd">        balance (float): Available account balance.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        bool: True if the balance is sufficient.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">amount</span> <span class="o">&lt;</span> <span class="n">balance</span></div>
 
 </pre></div>
@@ -107,6 +193,10 @@
     </div>
 </search>
 <script>document.getElementById('searchbox').style.display = "block"</script><h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules.html">app</a></li>
+</ul>
 
 <div class="relations">
 <h3>Related Topics</h3>

@@ -31,7 +31,15 @@
           <div class="body" role="main">
             
   <h1>Source code for app.api.account_routes</h1><div class="highlight"><pre>
-<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">fastapi</span><span class="w"> </span><span class="kn">import</span> <span class="n">APIRouter</span><span class="p">,</span> <span class="n">HTTPException</span><span class="p">,</span> <span class="n">Depends</span>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Account-related API endpoints.</span>
+
+<span class="sd">This module contains all routes related to bank accounts management,</span>
+<span class="sd">including account creation, listing, closing accounts, and managing beneficiaries.</span>
+<span class="sd">All endpoints require authentication using JWT tokens.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">fastapi</span><span class="w"> </span><span class="kn">import</span> <span class="n">APIRouter</span><span class="p">,</span> <span class="n">HTTPException</span><span class="p">,</span> <span class="n">Depends</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">datetime</span><span class="p">,</span> <span class="n">timezone</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">sqlmodel</span><span class="w"> </span><span class="kn">import</span> <span class="n">Session</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">app.db</span><span class="w"> </span><span class="kn">import</span> <span class="n">models</span>
@@ -44,13 +52,24 @@
 <span class="n">router</span> <span class="o">=</span> <span class="n">APIRouter</span><span class="p">(</span><span class="n">prefix</span><span class="o">=</span><span class="s2">&quot;/accounts&quot;</span><span class="p">,</span> <span class="n">tags</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;Accounts&quot;</span><span class="p">])</span>
 <span class="n">init_db</span><span class="p">()</span>
 
-
 <span class="n">ACCOUNT_NOT_FOUND</span> <span class="o">=</span> <span class="s2">&quot;Compte introuvable ou non autorisé&quot;</span>
 
 
 <div class="viewcode-block" id="get_current_user">
 <a class="viewcode-back" href="../../../app.api.html#app.api.account_routes.get_current_user">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_current_user</span><span class="p">(</span><span class="n">token</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">oauth2_scheme</span><span class="p">)):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Retrieve the current authenticated user ID from the JWT token.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        token (str): OAuth2 bearer token.</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        HTTPException: If the token is invalid or does not contain a user ID.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        int: Authenticated user ID.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="n">payload</span> <span class="o">=</span> <span class="n">jwt</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="n">token</span><span class="p">,</span> <span class="n">SECRET_KEY</span><span class="p">,</span> <span class="n">algorithms</span><span class="o">=</span><span class="p">[</span><span class="n">ALGORITHM</span><span class="p">])</span>
         <span class="n">user_id</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">payload</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;user_id&quot;</span><span class="p">)</span>
@@ -61,23 +80,61 @@
         <span class="k">raise</span> <span class="n">HTTPException</span><span class="p">(</span><span class="n">status_code</span><span class="o">=</span><span class="mi">401</span><span class="p">,</span> <span class="n">detail</span><span class="o">=</span><span class="s2">&quot;Invalid token&quot;</span><span class="p">)</span></div>
 
 
+
 <div class="viewcode-block" id="generate_rib">
 <a class="viewcode-back" href="../../../app.api.html#app.api.account_routes.generate_rib">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">generate_rib</span><span class="p">(</span><span class="n">user_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Generate a unique RIB for a bank account.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        user_id (int): Owner user ID.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        str: Generated RIB.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;FR</span><span class="si">{</span><span class="nb">int</span><span class="p">(</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">(</span><span class="n">timezone</span><span class="o">.</span><span class="n">utc</span><span class="p">)</span><span class="o">.</span><span class="n">timestamp</span><span class="p">())</span><span class="si">}{</span><span class="n">user_id</span><span class="si">}{</span><span class="n">uuid</span><span class="o">.</span><span class="n">uuid4</span><span class="p">()</span><span class="o">.</span><span class="n">hex</span><span class="p">[:</span><span class="mi">6</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span></div>
+
 
 
 <div class="viewcode-block" id="list_accounts">
 <a class="viewcode-back" href="../../../app.api.html#app.api.account_routes.list_accounts">[docs]</a>
 <span class="nd">@router</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">,</span> <span class="n">response_model</span><span class="o">=</span><span class="nb">list</span><span class="p">[</span><span class="n">models</span><span class="o">.</span><span class="n">Account</span><span class="p">])</span>
-<span class="k">def</span><span class="w"> </span><span class="nf">list_accounts</span><span class="p">(</span><span class="n">current_user</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">get_current_user</span><span class="p">),</span> <span class="n">db</span><span class="p">:</span> <span class="n">Session</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">get_session</span><span class="p">)):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">list_accounts</span><span class="p">(</span>
+    <span class="n">current_user</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">get_current_user</span><span class="p">),</span>
+    <span class="n">db</span><span class="p">:</span> <span class="n">Session</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">get_session</span><span class="p">)</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Retrieve all accounts belonging to the authenticated user.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        current_user (int): Authenticated user ID.</span>
+<span class="sd">        db (Session): Database session.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        list[Account]: List of user accounts.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">db</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Account</span><span class="p">)</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Account</span><span class="o">.</span><span class="n">user_id</span> <span class="o">==</span> <span class="n">current_user</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">()</span></div>
+
 
 
 <div class="viewcode-block" id="view_accounts">
 <a class="viewcode-back" href="../../../app.api.html#app.api.account_routes.view_accounts">[docs]</a>
 <span class="nd">@router</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;/myaccounts/&quot;</span><span class="p">,</span> <span class="n">response_model</span><span class="o">=</span><span class="nb">list</span><span class="p">[</span><span class="n">models</span><span class="o">.</span><span class="n">Account</span><span class="p">])</span>
-<span class="k">def</span><span class="w"> </span><span class="nf">view_accounts</span><span class="p">(</span><span class="n">db</span><span class="p">:</span> <span class="n">Session</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">get_session</span><span class="p">),</span> <span class="n">current_user</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">get_current_user</span><span class="p">)):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">view_accounts</span><span class="p">(</span>
+    <span class="n">db</span><span class="p">:</span> <span class="n">Session</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">get_session</span><span class="p">),</span>
+    <span class="n">current_user</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">get_current_user</span><span class="p">)</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Retrieve all active (non-closed) accounts of the authenticated user.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        db (Session): Database session.</span>
+<span class="sd">        current_user (int): Authenticated user ID.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        list[Account]: List of active accounts ordered by creation date.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">accounts</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Account</span><span class="p">)</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span>
         <span class="n">models</span><span class="o">.</span><span class="n">Account</span><span class="o">.</span><span class="n">user_id</span> <span class="o">==</span> <span class="n">current_user</span><span class="p">,</span>
         <span class="n">models</span><span class="o">.</span><span class="n">Account</span><span class="o">.</span><span class="n">closed</span> <span class="o">==</span> <span class="kc">False</span>
@@ -85,22 +142,68 @@
     <span class="k">return</span> <span class="n">accounts</span></div>
 
 
+
 <div class="viewcode-block" id="get_account">
 <a class="viewcode-back" href="../../../app.api.html#app.api.account_routes.get_account">[docs]</a>
 <span class="nd">@router</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;/</span><span class="si">{account_id}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">response_model</span><span class="o">=</span><span class="n">models</span><span class="o">.</span><span class="n">Account</span><span class="p">)</span>
-<span class="k">def</span><span class="w"> </span><span class="nf">get_account</span><span class="p">(</span><span class="n">account_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">db</span><span class="p">:</span> <span class="n">Session</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">get_session</span><span class="p">),</span> <span class="n">current_user</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">get_current_user</span><span class="p">)):</span>
-    <span class="n">account</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Account</span><span class="p">)</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Account</span><span class="o">.</span><span class="n">id</span> <span class="o">==</span> <span class="n">account_id</span><span class="p">,</span> <span class="n">models</span><span class="o">.</span><span class="n">Account</span><span class="o">.</span><span class="n">user_id</span> <span class="o">==</span> <span class="n">current_user</span><span class="p">)</span><span class="o">.</span><span class="n">first</span><span class="p">()</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_account</span><span class="p">(</span>
+    <span class="n">account_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">db</span><span class="p">:</span> <span class="n">Session</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">get_session</span><span class="p">),</span>
+    <span class="n">current_user</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">get_current_user</span><span class="p">)</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Retrieve a specific account by its ID.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        account_id (int): Account identifier.</span>
+<span class="sd">        db (Session): Database session.</span>
+<span class="sd">        current_user (int): Authenticated user ID.</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        HTTPException: If the account does not exist or does not belong to the user.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Account: Account details.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">account</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Account</span><span class="p">)</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span>
+        <span class="n">models</span><span class="o">.</span><span class="n">Account</span><span class="o">.</span><span class="n">id</span> <span class="o">==</span> <span class="n">account_id</span><span class="p">,</span>
+        <span class="n">models</span><span class="o">.</span><span class="n">Account</span><span class="o">.</span><span class="n">user_id</span> <span class="o">==</span> <span class="n">current_user</span>
+    <span class="p">)</span><span class="o">.</span><span class="n">first</span><span class="p">()</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">account</span><span class="p">:</span>
         <span class="k">raise</span> <span class="n">HTTPException</span><span class="p">(</span><span class="n">status_code</span><span class="o">=</span><span class="mi">404</span><span class="p">,</span> <span class="n">detail</span><span class="o">=</span><span class="s2">&quot;Compte introuvable&quot;</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">account</span></div>
 
 
+
 <div class="viewcode-block" id="create_account">
 <a class="viewcode-back" href="../../../app.api.html#app.api.account_routes.create_account">[docs]</a>
 <span class="nd">@router</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">,</span> <span class="n">response_model</span><span class="o">=</span><span class="n">models</span><span class="o">.</span><span class="n">Account</span><span class="p">)</span>
-<span class="k">def</span><span class="w"> </span><span class="nf">create_account</span><span class="p">(</span><span class="n">account_data</span><span class="p">:</span> <span class="n">AccountCreate</span><span class="p">,</span> <span class="n">db</span><span class="p">:</span> <span class="n">Session</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">get_session</span><span class="p">),</span> <span class="n">current_user</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">get_current_user</span><span class="p">)):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">create_account</span><span class="p">(</span>
+    <span class="n">account_data</span><span class="p">:</span> <span class="n">AccountCreate</span><span class="p">,</span>
+    <span class="n">db</span><span class="p">:</span> <span class="n">Session</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">get_session</span><span class="p">),</span>
+    <span class="n">current_user</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">get_current_user</span><span class="p">)</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Create a new bank account for the authenticated user.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        account_data (AccountCreate): Account creation payload.</span>
+<span class="sd">        db (Session): Database session.</span>
+<span class="sd">        current_user (int): Authenticated user ID.</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        HTTPException:</span>
+<span class="sd">            - If the account type is invalid.</span>
+<span class="sd">            - If an active account of the same type already exists.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Account: Newly created account.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">account_data</span><span class="o">.</span><span class="n">account_type</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">ACCOUNT_TYPES</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="n">HTTPException</span><span class="p">(</span><span class="n">status_code</span><span class="o">=</span><span class="mi">400</span><span class="p">,</span> <span class="n">detail</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;Type de compte invalide. Types autorisés : </span><span class="si">{</span><span class="n">ACCOUNT_TYPES</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="n">HTTPException</span><span class="p">(</span>
+            <span class="n">status_code</span><span class="o">=</span><span class="mi">400</span><span class="p">,</span>
+            <span class="n">detail</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;Type de compte invalide. Types autorisés : </span><span class="si">{</span><span class="n">ACCOUNT_TYPES</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="p">)</span>
 
     <span class="n">existing_active_account</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Account</span><span class="p">)</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span>
         <span class="n">models</span><span class="o">.</span><span class="n">Account</span><span class="o">.</span><span class="n">user_id</span> <span class="o">==</span> <span class="n">current_user</span><span class="p">,</span>
@@ -109,7 +212,10 @@
     <span class="p">)</span><span class="o">.</span><span class="n">first</span><span class="p">()</span>
 
     <span class="k">if</span> <span class="n">existing_active_account</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="n">HTTPException</span><span class="p">(</span><span class="n">status_code</span><span class="o">=</span><span class="mi">400</span><span class="p">,</span> <span class="n">detail</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;Vous avez déjà un compte actif de type &#39;</span><span class="si">{</span><span class="n">account_data</span><span class="o">.</span><span class="n">account_type</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="n">HTTPException</span><span class="p">(</span>
+            <span class="n">status_code</span><span class="o">=</span><span class="mi">400</span><span class="p">,</span>
+            <span class="n">detail</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;Vous avez déjà un compte actif de type &#39;</span><span class="si">{</span><span class="n">account_data</span><span class="o">.</span><span class="n">account_type</span><span class="si">}</span><span class="s2">&#39;&quot;</span>
+        <span class="p">)</span>
 
     <span class="n">new_account</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">Account</span><span class="p">(</span>
         <span class="n">user_id</span><span class="o">=</span><span class="n">current_user</span><span class="p">,</span>
@@ -127,10 +233,29 @@
     <span class="k">return</span> <span class="n">new_account</span></div>
 
 
+
 <div class="viewcode-block" id="close_account">
 <a class="viewcode-back" href="../../../app.api.html#app.api.account_routes.close_account">[docs]</a>
 <span class="nd">@router</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="s2">&quot;/close/</span><span class="si">{account_id}</span><span class="s2">&quot;</span><span class="p">)</span>
-<span class="k">def</span><span class="w"> </span><span class="nf">close_account</span><span class="p">(</span><span class="n">account_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">db</span><span class="p">:</span> <span class="n">Session</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">get_session</span><span class="p">),</span> <span class="n">current_user</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">get_current_user</span><span class="p">)):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">close_account</span><span class="p">(</span>
+    <span class="n">account_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">db</span><span class="p">:</span> <span class="n">Session</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">get_session</span><span class="p">),</span>
+    <span class="n">current_user</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">get_current_user</span><span class="p">)</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Close a secondary bank account and transfer its balance to the main account.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        account_id (int): Account identifier.</span>
+<span class="sd">        db (Session): Database session.</span>
+<span class="sd">        current_user (int): Authenticated user ID.</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        HTTPException: If the account cannot be closed.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        dict: Closure confirmation and updated main account balance.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">account</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Account</span><span class="p">)</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Account</span><span class="o">.</span><span class="n">id</span> <span class="o">==</span> <span class="n">account_id</span><span class="p">)</span><span class="o">.</span><span class="n">first</span><span class="p">()</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">account</span> <span class="ow">or</span> <span class="n">account</span><span class="o">.</span><span class="n">user_id</span> <span class="o">!=</span> <span class="n">current_user</span><span class="p">:</span>
         <span class="k">raise</span> <span class="n">HTTPException</span><span class="p">(</span><span class="n">status_code</span><span class="o">=</span><span class="mi">400</span><span class="p">,</span> <span class="n">detail</span><span class="o">=</span><span class="n">ACCOUNT_NOT_FOUND</span><span class="p">)</span>
@@ -141,7 +266,10 @@
     <span class="k">if</span> <span class="n">account</span><span class="o">.</span><span class="n">status</span><span class="p">:</span>
         <span class="k">raise</span> <span class="n">HTTPException</span><span class="p">(</span><span class="n">status_code</span><span class="o">=</span><span class="mi">400</span><span class="p">,</span> <span class="n">detail</span><span class="o">=</span><span class="s2">&quot;Le compte a des transactions en cours&quot;</span><span class="p">)</span>
 
-    <span class="n">main_account</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Account</span><span class="p">)</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Account</span><span class="o">.</span><span class="n">user_id</span> <span class="o">==</span> <span class="n">current_user</span><span class="p">,</span> <span class="n">models</span><span class="o">.</span><span class="n">Account</span><span class="o">.</span><span class="n">main</span> <span class="o">==</span> <span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">first</span><span class="p">()</span>
+    <span class="n">main_account</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Account</span><span class="p">)</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span>
+        <span class="n">models</span><span class="o">.</span><span class="n">Account</span><span class="o">.</span><span class="n">user_id</span> <span class="o">==</span> <span class="n">current_user</span><span class="p">,</span>
+        <span class="n">models</span><span class="o">.</span><span class="n">Account</span><span class="o">.</span><span class="n">main</span> <span class="o">==</span> <span class="kc">True</span>
+    <span class="p">)</span><span class="o">.</span><span class="n">first</span><span class="p">()</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">main_account</span><span class="p">:</span>
         <span class="k">raise</span> <span class="n">HTTPException</span><span class="p">(</span><span class="n">status_code</span><span class="o">=</span><span class="mi">400</span><span class="p">,</span> <span class="n">detail</span><span class="o">=</span><span class="s2">&quot;Compte principal introuvable&quot;</span><span class="p">)</span>
 
@@ -151,10 +279,31 @@
     <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;detail&quot;</span><span class="p">:</span> <span class="s2">&quot;Compte fermé&quot;</span><span class="p">,</span> <span class="s2">&quot;main_account_balance&quot;</span><span class="p">:</span> <span class="n">main_account</span><span class="o">.</span><span class="n">balance</span><span class="p">}</span></div>
 
 
+
 <div class="viewcode-block" id="add_beneficiary">
 <a class="viewcode-back" href="../../../app.api.html#app.api.account_routes.add_beneficiary">[docs]</a>
 <span class="nd">@router</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="s2">&quot;/beneficiary/</span><span class="si">{account_id}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">response_model</span><span class="o">=</span><span class="n">models</span><span class="o">.</span><span class="n">Beneficiary</span><span class="p">)</span>
-<span class="k">def</span><span class="w"> </span><span class="nf">add_beneficiary</span><span class="p">(</span><span class="n">account_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">BeneficiaryCreate</span><span class="p">,</span> <span class="n">db</span><span class="p">:</span> <span class="n">Session</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">get_session</span><span class="p">),</span> <span class="n">current_user</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">get_current_user</span><span class="p">)):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">add_beneficiary</span><span class="p">(</span>
+    <span class="n">account_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">data</span><span class="p">:</span> <span class="n">BeneficiaryCreate</span><span class="p">,</span>
+    <span class="n">db</span><span class="p">:</span> <span class="n">Session</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">get_session</span><span class="p">),</span>
+    <span class="n">current_user</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">get_current_user</span><span class="p">)</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Add a beneficiary to a specific account.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        account_id (int): Account identifier.</span>
+<span class="sd">        data (BeneficiaryCreate): Beneficiary information.</span>
+<span class="sd">        db (Session): Database session.</span>
+<span class="sd">        current_user (int): Authenticated user ID.</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        HTTPException: If the beneficiary cannot be added.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Beneficiary: Created beneficiary.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">account</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Account</span><span class="p">)</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Account</span><span class="o">.</span><span class="n">id</span> <span class="o">==</span> <span class="n">account_id</span><span class="p">)</span><span class="o">.</span><span class="n">first</span><span class="p">()</span>
     <span class="n">rib</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">rib</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
     <span class="n">name</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">name</span>
@@ -186,35 +335,95 @@
     <span class="k">return</span> <span class="n">beneficiary</span></div>
 
 
+
 <div class="viewcode-block" id="list_beneficiaries">
 <a class="viewcode-back" href="../../../app.api.html#app.api.account_routes.list_beneficiaries">[docs]</a>
 <span class="nd">@router</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;/beneficiary/</span><span class="si">{account_id}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">response_model</span><span class="o">=</span><span class="nb">list</span><span class="p">[</span><span class="n">models</span><span class="o">.</span><span class="n">Beneficiary</span><span class="p">])</span>
-<span class="k">def</span><span class="w"> </span><span class="nf">list_beneficiaries</span><span class="p">(</span><span class="n">account_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">db</span><span class="p">:</span> <span class="n">Session</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">get_session</span><span class="p">),</span> <span class="n">current_user</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">get_current_user</span><span class="p">)):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">list_beneficiaries</span><span class="p">(</span>
+    <span class="n">account_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">db</span><span class="p">:</span> <span class="n">Session</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">get_session</span><span class="p">),</span>
+    <span class="n">current_user</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">get_current_user</span><span class="p">)</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Retrieve all beneficiaries associated with an account.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        account_id (int): Account identifier.</span>
+<span class="sd">        db (Session): Database session.</span>
+<span class="sd">        current_user (int): Authenticated user ID.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        list[Beneficiary]: List of beneficiaries.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">account</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Account</span><span class="p">)</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Account</span><span class="o">.</span><span class="n">id</span> <span class="o">==</span> <span class="n">account_id</span><span class="p">)</span><span class="o">.</span><span class="n">first</span><span class="p">()</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">account</span> <span class="ow">or</span> <span class="n">account</span><span class="o">.</span><span class="n">user_id</span> <span class="o">!=</span> <span class="n">current_user</span><span class="p">:</span>
         <span class="k">raise</span> <span class="n">HTTPException</span><span class="p">(</span><span class="n">status_code</span><span class="o">=</span><span class="mi">400</span><span class="p">,</span> <span class="n">detail</span><span class="o">=</span><span class="n">ACCOUNT_NOT_FOUND</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">db</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Beneficiary</span><span class="p">)</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Beneficiary</span><span class="o">.</span><span class="n">account_id</span> <span class="o">==</span> <span class="n">account_id</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">()</span></div>
+    <span class="k">return</span> <span class="n">db</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Beneficiary</span><span class="p">)</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span>
+        <span class="n">models</span><span class="o">.</span><span class="n">Beneficiary</span><span class="o">.</span><span class="n">account_id</span> <span class="o">==</span> <span class="n">account_id</span>
+    <span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">()</span></div>
+
 
 
 <div class="viewcode-block" id="delete_beneficiary">
 <a class="viewcode-back" href="../../../app.api.html#app.api.account_routes.delete_beneficiary">[docs]</a>
 <span class="nd">@router</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="s2">&quot;/beneficiary/</span><span class="si">{account_id}</span><span class="s2">/</span><span class="si">{rib}</span><span class="s2">&quot;</span><span class="p">)</span>
-<span class="k">def</span><span class="w"> </span><span class="nf">delete_beneficiary</span><span class="p">(</span><span class="n">account_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">rib</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">db</span><span class="p">:</span> <span class="n">Session</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">get_session</span><span class="p">),</span> <span class="n">current_user</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">get_current_user</span><span class="p">)):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">delete_beneficiary</span><span class="p">(</span>
+    <span class="n">account_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">rib</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">db</span><span class="p">:</span> <span class="n">Session</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">get_session</span><span class="p">),</span>
+    <span class="n">current_user</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">get_current_user</span><span class="p">)</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Delete a beneficiary from an account.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        account_id (int): Account identifier.</span>
+<span class="sd">        rib (str): Beneficiary RIB.</span>
+<span class="sd">        db (Session): Database session.</span>
+<span class="sd">        current_user (int): Authenticated user ID.</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        HTTPException: If the beneficiary does not exist.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        dict: Deletion confirmation message.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">account</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Account</span><span class="p">)</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Account</span><span class="o">.</span><span class="n">id</span> <span class="o">==</span> <span class="n">account_id</span><span class="p">)</span><span class="o">.</span><span class="n">first</span><span class="p">()</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">account</span> <span class="ow">or</span> <span class="n">account</span><span class="o">.</span><span class="n">user_id</span> <span class="o">!=</span> <span class="n">current_user</span><span class="p">:</span>
         <span class="k">raise</span> <span class="n">HTTPException</span><span class="p">(</span><span class="n">status_code</span><span class="o">=</span><span class="mi">400</span><span class="p">,</span> <span class="n">detail</span><span class="o">=</span><span class="n">ACCOUNT_NOT_FOUND</span><span class="p">)</span>
-    <span class="n">beneficiary</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Beneficiary</span><span class="p">)</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Beneficiary</span><span class="o">.</span><span class="n">account_id</span> <span class="o">==</span> <span class="n">account_id</span><span class="p">,</span> <span class="n">models</span><span class="o">.</span><span class="n">Beneficiary</span><span class="o">.</span><span class="n">rib</span> <span class="o">==</span> <span class="n">rib</span><span class="p">)</span><span class="o">.</span><span class="n">first</span><span class="p">()</span>
+
+    <span class="n">beneficiary</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Beneficiary</span><span class="p">)</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span>
+        <span class="n">models</span><span class="o">.</span><span class="n">Beneficiary</span><span class="o">.</span><span class="n">account_id</span> <span class="o">==</span> <span class="n">account_id</span><span class="p">,</span>
+        <span class="n">models</span><span class="o">.</span><span class="n">Beneficiary</span><span class="o">.</span><span class="n">rib</span> <span class="o">==</span> <span class="n">rib</span>
+    <span class="p">)</span><span class="o">.</span><span class="n">first</span><span class="p">()</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">beneficiary</span><span class="p">:</span>
         <span class="k">raise</span> <span class="n">HTTPException</span><span class="p">(</span><span class="n">status_code</span><span class="o">=</span><span class="mi">400</span><span class="p">,</span> <span class="n">detail</span><span class="o">=</span><span class="s2">&quot;Bénéficiaire introuvable&quot;</span><span class="p">)</span>
+
     <span class="n">db</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">beneficiary</span><span class="p">)</span>
     <span class="n">db</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
     <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;detail&quot;</span><span class="p">:</span> <span class="s2">&quot;Bénéficiaire supprimé&quot;</span><span class="p">}</span></div>
 
 
+
 <div class="viewcode-block" id="get_rib">
 <a class="viewcode-back" href="../../../app.api.html#app.api.account_routes.get_rib">[docs]</a>
 <span class="nd">@router</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;/beneficiary/</span><span class="si">{account_id}</span><span class="s2">/RIB&quot;</span><span class="p">,</span> <span class="n">response_model</span><span class="o">=</span><span class="nb">str</span><span class="p">)</span>
-<span class="k">def</span><span class="w"> </span><span class="nf">get_rib</span><span class="p">(</span><span class="n">account_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">db</span><span class="p">:</span> <span class="n">Session</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">get_session</span><span class="p">),</span> <span class="n">current_user</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">get_current_user</span><span class="p">)):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_rib</span><span class="p">(</span>
+    <span class="n">account_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">db</span><span class="p">:</span> <span class="n">Session</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">get_session</span><span class="p">),</span>
+    <span class="n">current_user</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">get_current_user</span><span class="p">)</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Retrieve the RIB of a specific account.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        account_id (int): Account identifier.</span>
+<span class="sd">        db (Session): Database session.</span>
+<span class="sd">        current_user (int): Authenticated user ID.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        str: Account RIB.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">account</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Account</span><span class="p">)</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Account</span><span class="o">.</span><span class="n">id</span> <span class="o">==</span> <span class="n">account_id</span><span class="p">)</span><span class="o">.</span><span class="n">first</span><span class="p">()</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">account</span> <span class="ow">or</span> <span class="n">account</span><span class="o">.</span><span class="n">user_id</span> <span class="o">!=</span> <span class="n">current_user</span><span class="p">:</span>
         <span class="k">raise</span> <span class="n">HTTPException</span><span class="p">(</span><span class="n">status_code</span><span class="o">=</span><span class="mi">400</span><span class="p">,</span> <span class="n">detail</span><span class="o">=</span><span class="n">ACCOUNT_NOT_FOUND</span><span class="p">)</span>
@@ -247,6 +456,10 @@
     </div>
 </search>
 <script>document.getElementById('searchbox').style.display = "block"</script><h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules.html">app</a></li>
+</ul>
 
 <div class="relations">
 <h3>Related Topics</h3>

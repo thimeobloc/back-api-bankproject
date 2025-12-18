@@ -14,6 +14,8 @@
     <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="app.core package" href="app.core.html" />
+    <link rel="prev" title="app package" href="app.html" />
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
   
@@ -38,117 +40,490 @@
 </section>
 <section id="module-app.api.account_routes">
 <span id="app-api-account-routes-module"></span><h2>app.api.account_routes module<a class="headerlink" href="#module-app.api.account_routes" title="Link to this heading">¶</a></h2>
+<p>Account-related API endpoints.</p>
+<p>This module contains all routes related to bank accounts management,
+including account creation, listing, closing accounts, and managing beneficiaries.
+All endpoints require authentication using JWT tokens.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="app.api.account_routes.add_beneficiary">
 <span class="sig-prename descclassname"><span class="pre">app.api.account_routes.</span></span><span class="sig-name descname"><span class="pre">add_beneficiary</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">account_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="app.schemas.html#app.schemas.account_schemas.BeneficiaryCreate" title="app.schemas.account_schemas.BeneficiaryCreate"><span class="pre">BeneficiaryCreate</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">db</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Session</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Depends(get_session)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">current_user</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Depends(get_current_user)</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/api/account_routes.html#add_beneficiary"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#app.api.account_routes.add_beneficiary" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Add a beneficiary to a specific account.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>account_id</strong> (<em>int</em>) – Account identifier.</p></li>
+<li><p><strong>data</strong> (<a class="reference internal" href="app.schemas.html#app.schemas.account_schemas.BeneficiaryCreate" title="app.schemas.account_schemas.BeneficiaryCreate"><em>BeneficiaryCreate</em></a>) – Beneficiary information.</p></li>
+<li><p><strong>db</strong> (<em>Session</em>) – Database session.</p></li>
+<li><p><strong>current_user</strong> (<em>int</em>) – Authenticated user ID.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>HTTPException</strong> – If the beneficiary cannot be added.</p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Created beneficiary.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="app.db.html#app.db.models.Beneficiary" title="app.db.models.Beneficiary">Beneficiary</a></p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="app.api.account_routes.close_account">
 <span class="sig-prename descclassname"><span class="pre">app.api.account_routes.</span></span><span class="sig-name descname"><span class="pre">close_account</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">account_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">db</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Session</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Depends(get_session)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">current_user</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Depends(get_current_user)</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/api/account_routes.html#close_account"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#app.api.account_routes.close_account" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Close a secondary bank account and transfer its balance to the main account.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>account_id</strong> (<em>int</em>) – Account identifier.</p></li>
+<li><p><strong>db</strong> (<em>Session</em>) – Database session.</p></li>
+<li><p><strong>current_user</strong> (<em>int</em>) – Authenticated user ID.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>HTTPException</strong> – If the account cannot be closed.</p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Closure confirmation and updated main account balance.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="app.api.account_routes.create_account">
 <span class="sig-prename descclassname"><span class="pre">app.api.account_routes.</span></span><span class="sig-name descname"><span class="pre">create_account</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">account_data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="app.schemas.html#app.schemas.account_schemas.AccountCreate" title="app.schemas.account_schemas.AccountCreate"><span class="pre">AccountCreate</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">db</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Session</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Depends(get_session)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">current_user</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Depends(get_current_user)</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/api/account_routes.html#create_account"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#app.api.account_routes.create_account" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Create a new bank account for the authenticated user.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>account_data</strong> (<a class="reference internal" href="app.schemas.html#app.schemas.account_schemas.AccountCreate" title="app.schemas.account_schemas.AccountCreate"><em>AccountCreate</em></a>) – Account creation payload.</p></li>
+<li><p><strong>db</strong> (<em>Session</em>) – Database session.</p></li>
+<li><p><strong>current_user</strong> (<em>int</em>) – Authenticated user ID.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>HTTPException</strong> – <ul class="simple">
+<li><p>If the account type is invalid.
+    - If an active account of the same type already exists.</p></li>
+</ul>
+</p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Newly created account.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="app.db.html#app.db.models.Account" title="app.db.models.Account">Account</a></p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="app.api.account_routes.delete_beneficiary">
 <span class="sig-prename descclassname"><span class="pre">app.api.account_routes.</span></span><span class="sig-name descname"><span class="pre">delete_beneficiary</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">account_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rib</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">db</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Session</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Depends(get_session)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">current_user</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Depends(get_current_user)</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/api/account_routes.html#delete_beneficiary"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#app.api.account_routes.delete_beneficiary" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Delete a beneficiary from an account.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>account_id</strong> (<em>int</em>) – Account identifier.</p></li>
+<li><p><strong>rib</strong> (<em>str</em>) – Beneficiary RIB.</p></li>
+<li><p><strong>db</strong> (<em>Session</em>) – Database session.</p></li>
+<li><p><strong>current_user</strong> (<em>int</em>) – Authenticated user ID.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>HTTPException</strong> – If the beneficiary does not exist.</p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Deletion confirmation message.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="app.api.account_routes.generate_rib">
 <span class="sig-prename descclassname"><span class="pre">app.api.account_routes.</span></span><span class="sig-name descname"><span class="pre">generate_rib</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">user_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="reference internal" href="_modules/app/api/account_routes.html#generate_rib"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#app.api.account_routes.generate_rib" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Generate a unique RIB for a bank account.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>user_id</strong> (<em>int</em>) – Owner user ID.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Generated RIB.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="app.api.account_routes.get_account">
 <span class="sig-prename descclassname"><span class="pre">app.api.account_routes.</span></span><span class="sig-name descname"><span class="pre">get_account</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">account_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">db</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Session</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Depends(get_session)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">current_user</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Depends(get_current_user)</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/api/account_routes.html#get_account"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#app.api.account_routes.get_account" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Retrieve a specific account by its ID.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>account_id</strong> (<em>int</em>) – Account identifier.</p></li>
+<li><p><strong>db</strong> (<em>Session</em>) – Database session.</p></li>
+<li><p><strong>current_user</strong> (<em>int</em>) – Authenticated user ID.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>HTTPException</strong> – If the account does not exist or does not belong to the user.</p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Account details.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="app.db.html#app.db.models.Account" title="app.db.models.Account">Account</a></p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="app.api.account_routes.get_current_user">
 <span class="sig-prename descclassname"><span class="pre">app.api.account_routes.</span></span><span class="sig-name descname"><span class="pre">get_current_user</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">token</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Depends(OAuth2PasswordBearer)</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/api/account_routes.html#get_current_user"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#app.api.account_routes.get_current_user" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Retrieve the current authenticated user ID from the JWT token.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>token</strong> (<em>str</em>) – OAuth2 bearer token.</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>HTTPException</strong> – If the token is invalid or does not contain a user ID.</p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Authenticated user ID.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="app.api.account_routes.get_rib">
 <span class="sig-prename descclassname"><span class="pre">app.api.account_routes.</span></span><span class="sig-name descname"><span class="pre">get_rib</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">account_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">db</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Session</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Depends(get_session)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">current_user</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Depends(get_current_user)</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/api/account_routes.html#get_rib"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#app.api.account_routes.get_rib" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Retrieve the RIB of a specific account.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>account_id</strong> (<em>int</em>) – Account identifier.</p></li>
+<li><p><strong>db</strong> (<em>Session</em>) – Database session.</p></li>
+<li><p><strong>current_user</strong> (<em>int</em>) – Authenticated user ID.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Account RIB.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="app.api.account_routes.list_accounts">
 <span class="sig-prename descclassname"><span class="pre">app.api.account_routes.</span></span><span class="sig-name descname"><span class="pre">list_accounts</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">current_user</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Depends(get_current_user)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">db</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Session</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Depends(get_session)</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/api/account_routes.html#list_accounts"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#app.api.account_routes.list_accounts" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Retrieve all accounts belonging to the authenticated user.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>current_user</strong> (<em>int</em>) – Authenticated user ID.</p></li>
+<li><p><strong>db</strong> (<em>Session</em>) – Database session.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>List of user accounts.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list[<a class="reference internal" href="app.db.html#app.db.models.Account" title="app.db.models.Account">Account</a>]</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="app.api.account_routes.list_beneficiaries">
 <span class="sig-prename descclassname"><span class="pre">app.api.account_routes.</span></span><span class="sig-name descname"><span class="pre">list_beneficiaries</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">account_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">db</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Session</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Depends(get_session)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">current_user</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Depends(get_current_user)</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/api/account_routes.html#list_beneficiaries"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#app.api.account_routes.list_beneficiaries" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Retrieve all beneficiaries associated with an account.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>account_id</strong> (<em>int</em>) – Account identifier.</p></li>
+<li><p><strong>db</strong> (<em>Session</em>) – Database session.</p></li>
+<li><p><strong>current_user</strong> (<em>int</em>) – Authenticated user ID.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>List of beneficiaries.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list[<a class="reference internal" href="app.db.html#app.db.models.Beneficiary" title="app.db.models.Beneficiary">Beneficiary</a>]</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="app.api.account_routes.view_accounts">
 <span class="sig-prename descclassname"><span class="pre">app.api.account_routes.</span></span><span class="sig-name descname"><span class="pre">view_accounts</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">db</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Session</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Depends(get_session)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">current_user</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Depends(get_current_user)</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/api/account_routes.html#view_accounts"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#app.api.account_routes.view_accounts" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Retrieve all active (non-closed) accounts of the authenticated user.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>db</strong> (<em>Session</em>) – Database session.</p></li>
+<li><p><strong>current_user</strong> (<em>int</em>) – Authenticated user ID.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>List of active accounts ordered by creation date.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list[<a class="reference internal" href="app.db.html#app.db.models.Account" title="app.db.models.Account">Account</a>]</p>
+</dd>
+</dl>
+</dd></dl>
 
 </section>
 <section id="module-app.api.balance_routes">
 <span id="app-api-balance-routes-module"></span><h2>app.api.balance_routes module<a class="headerlink" href="#module-app.api.balance_routes" title="Link to this heading">¶</a></h2>
+<p>Balance-related API endpoints.</p>
+<p>This module manages all monetary operations on accounts, including deposits,
+withdrawals, and transfers between accounts. All operations are protected
+by JWT authentication and include business rule validations.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="app.api.balance_routes.abort_transfer">
 <span class="sig-prename descclassname"><span class="pre">app.api.balance_routes.</span></span><span class="sig-name descname"><span class="pre">abort_transfer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">transfer_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">current_user</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Depends(get_current_user)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">db</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Session</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Depends(get_session)</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/api/balance_routes.html#abort_transfer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#app.api.balance_routes.abort_transfer" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Abort a pending transfer and refund the sender.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>transfer_id</strong> (<em>int</em>) – Transfer identifier.</p></li>
+<li><p><strong>current_user</strong> (<em>int</em>) – Authenticated user ID.</p></li>
+<li><p><strong>db</strong> (<em>Session</em>) – Database session.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>HTTPException</strong> – If the transfer cannot be aborted.</p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Cancellation confirmation.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="app.api.balance_routes.complete_transfer_task">
 <span class="sig-prename descclassname"><span class="pre">app.api.balance_routes.</span></span><span class="sig-name descname"><span class="pre">complete_transfer_task</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">db</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Session</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transfer_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/api/balance_routes.html#complete_transfer_task"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#app.api.balance_routes.complete_transfer_task" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Finalize a pending transfer by crediting the recipient account.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>db</strong> (<em>Session</em>) – Database session.</p></li>
+<li><p><strong>transfer_id</strong> (<em>int</em>) – Transfer identifier.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="app.api.balance_routes.delayed_complete_transfer">
 <span class="sig-prename descclassname"><span class="pre">app.api.balance_routes.</span></span><span class="sig-name descname"><span class="pre">delayed_complete_transfer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">transfer_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">db</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Session</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">delay</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">30</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/api/balance_routes.html#delayed_complete_transfer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#app.api.balance_routes.delayed_complete_transfer" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Delay transfer completion to simulate processing time.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>transfer_id</strong> (<em>int</em>) – Transfer identifier.</p></li>
+<li><p><strong>db</strong> (<em>Session</em>) – Database session.</p></li>
+<li><p><strong>delay</strong> (<em>int</em>) – Delay in seconds.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="app.api.balance_routes.deposit_endpoint">
 <span class="sig-prename descclassname"><span class="pre">app.api.balance_routes.</span></span><span class="sig-name descname"><span class="pre">deposit_endpoint</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">balance</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="app.schemas.html#app.schemas.balance_schemas.DepositCreate" title="app.schemas.balance_schemas.DepositCreate"><span class="pre">DepositCreate</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">current_user</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Depends(get_current_user)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">db</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Session</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Depends(get_session)</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/api/balance_routes.html#deposit_endpoint"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#app.api.balance_routes.deposit_endpoint" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Deposit money into a user’s account.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>balance</strong> (<a class="reference internal" href="app.schemas.html#app.schemas.balance_schemas.DepositCreate" title="app.schemas.balance_schemas.DepositCreate"><em>DepositCreate</em></a>) – Deposit request payload.</p></li>
+<li><p><strong>current_user</strong> (<em>int</em>) – Authenticated user ID.</p></li>
+<li><p><strong>db</strong> (<em>Session</em>) – Database session.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>HTTPException</strong> – <ul class="simple">
+<li><p>If the account does not belong to the user.
+    - If the account is closed.
+    - If the deposit amount is invalid.</p></li>
+</ul>
+</p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Confirmation message, updated balance, and deposit ID.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="app.api.balance_routes.get_current_user">
 <span class="sig-prename descclassname"><span class="pre">app.api.balance_routes.</span></span><span class="sig-name descname"><span class="pre">get_current_user</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">token</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Depends(OAuth2PasswordBearer)</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/api/balance_routes.html#get_current_user"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#app.api.balance_routes.get_current_user" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Extract and validate the authenticated user from a JWT token.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>token</strong> (<em>str</em>) – OAuth2 bearer token.</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>HTTPException</strong> – If the token is invalid or missing the user identifier.</p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Authenticated user ID.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="app.api.balance_routes.get_user_transfers">
 <span class="sig-prename descclassname"><span class="pre">app.api.balance_routes.</span></span><span class="sig-name descname"><span class="pre">get_user_transfers</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">current_user</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Depends(get_current_user)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">db</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Session</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Depends(get_session)</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/api/balance_routes.html#get_user_transfers"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#app.api.balance_routes.get_user_transfers" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Retrieve all transfers involving the authenticated user’s accounts.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>current_user</strong> (<em>int</em>) – Authenticated user ID.</p></li>
+<li><p><strong>db</strong> (<em>Session</em>) – Database session.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>List of transfers ordered by date.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list[<a class="reference internal" href="app.db.html#app.db.models.Transfer" title="app.db.models.Transfer">Transfer</a>]</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="app.api.balance_routes.list_deposits">
 <span class="sig-prename descclassname"><span class="pre">app.api.balance_routes.</span></span><span class="sig-name descname"><span class="pre">list_deposits</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">account_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">current_user</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Depends(get_current_user)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">db</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Session</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Depends(get_session)</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/api/balance_routes.html#list_deposits"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#app.api.balance_routes.list_deposits" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Retrieve all deposits for a specific account.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>account_id</strong> (<em>int</em>) – Account identifier.</p></li>
+<li><p><strong>current_user</strong> (<em>int</em>) – Authenticated user ID.</p></li>
+<li><p><strong>db</strong> (<em>Session</em>) – Database session.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>HTTPException</strong> – If access is denied or the account is closed.</p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>List of deposits ordered by date.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>list[<a class="reference internal" href="app.db.html#app.db.models.Deposit" title="app.db.models.Deposit">Deposit</a>]</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="app.api.balance_routes.list_withdraws">
 <span class="sig-prename descclassname"><span class="pre">app.api.balance_routes.</span></span><span class="sig-name descname"><span class="pre">list_withdraws</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">account_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">current_user</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Depends(get_current_user)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">db</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Session</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Depends(get_session)</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/api/balance_routes.html#list_withdraws"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#app.api.balance_routes.list_withdraws" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Retrieve all withdrawals for a specific account.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>account_id</strong> (<em>int</em>) – Account identifier.</p></li>
+<li><p><strong>current_user</strong> (<em>int</em>) – Authenticated user ID.</p></li>
+<li><p><strong>db</strong> (<em>Session</em>) – Database session.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>List of withdrawals ordered by date.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list[<a class="reference internal" href="app.db.html#app.db.models.Withdraw" title="app.db.models.Withdraw">Withdraw</a>]</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="app.api.balance_routes.transfer_endpoint">
 <span class="sig-prename descclassname"><span class="pre">app.api.balance_routes.</span></span><span class="sig-name descname"><span class="pre">transfer_endpoint</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">balance</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="app.schemas.html#app.schemas.balance_schemas.TransferByRIB" title="app.schemas.balance_schemas.TransferByRIB"><span class="pre">TransferByRIB</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">background_tasks</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">BackgroundTasks</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">current_user</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Depends(get_current_user)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">db</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Session</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Depends(get_session)</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/api/balance_routes.html#transfer_endpoint"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#app.api.balance_routes.transfer_endpoint" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Initiate a transfer between two accounts using a recipient RIB.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>balance</strong> (<a class="reference internal" href="app.schemas.html#app.schemas.balance_schemas.TransferByRIB" title="app.schemas.balance_schemas.TransferByRIB"><em>TransferByRIB</em></a>) – Transfer payload.</p></li>
+<li><p><strong>background_tasks</strong> (<em>BackgroundTasks</em>) – Background task manager.</p></li>
+<li><p><strong>current_user</strong> (<em>int</em>) – Authenticated user ID.</p></li>
+<li><p><strong>db</strong> (<em>Session</em>) – Database session.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>HTTPException</strong> – If the transfer cannot be initiated.</p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Transfer status and updated sender balance.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="app.api.balance_routes.withdraw_endpoint">
 <span class="sig-prename descclassname"><span class="pre">app.api.balance_routes.</span></span><span class="sig-name descname"><span class="pre">withdraw_endpoint</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">balance</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="app.schemas.html#app.schemas.balance_schemas.WithdrawCreate" title="app.schemas.balance_schemas.WithdrawCreate"><span class="pre">WithdrawCreate</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">current_user</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Depends(get_current_user)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">db</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Session</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Depends(get_session)</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/api/balance_routes.html#withdraw_endpoint"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#app.api.balance_routes.withdraw_endpoint" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Withdraw money from a user’s account.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>balance</strong> (<a class="reference internal" href="app.schemas.html#app.schemas.balance_schemas.WithdrawCreate" title="app.schemas.balance_schemas.WithdrawCreate"><em>WithdrawCreate</em></a>) – Withdrawal request payload.</p></li>
+<li><p><strong>current_user</strong> (<em>int</em>) – Authenticated user ID.</p></li>
+<li><p><strong>db</strong> (<em>Session</em>) – Database session.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>HTTPException</strong> – <ul class="simple">
+<li><p>If the account is invalid or closed.
+    - If the withdrawal amount is invalid.
+    - If the account balance is insufficient.</p></li>
+</ul>
+</p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Confirmation message and updated balance.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
 
 </section>
 <section id="module-app.api.router">
 <span id="app-api-router-module"></span><h2>app.api.router module<a class="headerlink" href="#module-app.api.router" title="Link to this heading">¶</a></h2>
+<p>Main API router.</p>
+<p>This module aggregates and registers all application route groups,
+including user management, account management, and balance operations.
+It serves as the central entry point for API routing.</p>
 </section>
 <section id="module-app.api.user_routes">
 <span id="app-api-user-routes-module"></span><h2>app.api.user_routes module<a class="headerlink" href="#module-app.api.user_routes" title="Link to this heading">¶</a></h2>
@@ -290,11 +665,24 @@ including registration, authentication, and user retrieval.</p>
     </div>
 </search>
 <script>document.getElementById('searchbox').style.display = "block"</script><h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">app</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="app.html">app package</a></li>
+</ul>
+</li>
+</ul>
 
 <div class="relations">
 <h3>Related Topics</h3>
 <ul>
   <li><a href="index.html">Documentation overview</a><ul>
+  <li><a href="modules.html">app</a><ul>
+  <li><a href="app.html">app package</a><ul>
+      <li>Previous: <a href="app.html" title="previous chapter">app package</a></li>
+      <li>Next: <a href="app.core.html" title="next chapter">app.core package</a></li>
+  </ul></li>
+  </ul></li>
   </ul></li>
 </ul>
 </div>

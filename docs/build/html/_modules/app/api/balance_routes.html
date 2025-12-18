@@ -31,14 +31,28 @@
           <div class="body" role="main">
             
   <h1>Source code for app.api.balance_routes</h1><div class="highlight"><pre>
-<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">fastapi</span><span class="w"> </span><span class="kn">import</span> <span class="n">APIRouter</span><span class="p">,</span> <span class="n">HTTPException</span><span class="p">,</span> <span class="n">Depends</span><span class="p">,</span> <span class="n">BackgroundTasks</span>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Balance-related API endpoints.</span>
+
+<span class="sd">This module manages all monetary operations on accounts, including deposits,</span>
+<span class="sd">withdrawals, and transfers between accounts. All operations are protected</span>
+<span class="sd">by JWT authentication and include business rule validations.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">fastapi</span><span class="w"> </span><span class="kn">import</span> <span class="n">APIRouter</span><span class="p">,</span> <span class="n">HTTPException</span><span class="p">,</span> <span class="n">Depends</span><span class="p">,</span> <span class="n">BackgroundTasks</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">datetime</span><span class="p">,</span> <span class="n">timezone</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">time</span><span class="w"> </span><span class="kn">import</span> <span class="n">sleep</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">sqlmodel</span><span class="w"> </span><span class="kn">import</span> <span class="n">Session</span><span class="p">,</span> <span class="n">select</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">app.db</span><span class="w"> </span><span class="kn">import</span> <span class="n">models</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">app.schemas.balance_schemas</span><span class="w"> </span><span class="kn">import</span> <span class="n">DepositCreate</span><span class="p">,</span> <span class="n">WithdrawCreate</span><span class="p">,</span> <span class="n">TransferByRIB</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">app.db.database</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_session</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">app.core.security</span><span class="w"> </span><span class="kn">import</span> <span class="n">amount_verification</span><span class="p">,</span> <span class="n">enough_amount</span><span class="p">,</span> <span class="n">oauth2_scheme</span><span class="p">,</span> <span class="n">SECRET_KEY</span><span class="p">,</span> <span class="n">ALGORITHM</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">app.core.security</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">amount_verification</span><span class="p">,</span>
+    <span class="n">enough_amount</span><span class="p">,</span>
+    <span class="n">oauth2_scheme</span><span class="p">,</span>
+    <span class="n">SECRET_KEY</span><span class="p">,</span>
+    <span class="n">ALGORITHM</span>
+<span class="p">)</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">jose</span><span class="w"> </span><span class="kn">import</span> <span class="n">jwt</span><span class="p">,</span> <span class="n">JWTError</span>
 
 <span class="n">router</span> <span class="o">=</span> <span class="n">APIRouter</span><span class="p">(</span><span class="n">prefix</span><span class="o">=</span><span class="s2">&quot;/balances&quot;</span><span class="p">,</span> <span class="n">tags</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;Balances&quot;</span><span class="p">])</span>
@@ -55,12 +69,22 @@
 <span class="n">SAME_ACCOUNT_TRANSFER</span> <span class="o">=</span> <span class="s2">&quot;Transfert impossible (même compte)&quot;</span>
 <span class="n">TRANSFER_NOT_FOUND</span> <span class="o">=</span> <span class="s2">&quot;Transfert non trouvé ou déjà traité&quot;</span>
 
-<span class="c1"># ---------------------------</span>
-<span class="c1"># JWT Helper</span>
-<span class="c1"># ---------------------------</span>
+
 <div class="viewcode-block" id="get_current_user">
 <a class="viewcode-back" href="../../../app.api.html#app.api.balance_routes.get_current_user">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_current_user</span><span class="p">(</span><span class="n">token</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">oauth2_scheme</span><span class="p">)):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Extract and validate the authenticated user from a JWT token.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        token (str): OAuth2 bearer token.</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        HTTPException: If the token is invalid or missing the user identifier.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        int: Authenticated user ID.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="n">payload</span> <span class="o">=</span> <span class="n">jwt</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="n">token</span><span class="p">,</span> <span class="n">SECRET_KEY</span><span class="p">,</span> <span class="n">algorithms</span><span class="o">=</span><span class="p">[</span><span class="n">ALGORITHM</span><span class="p">])</span>
         <span class="n">user_id</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">payload</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;user_id&quot;</span><span class="p">)</span>
@@ -71,16 +95,35 @@
         <span class="k">raise</span> <span class="n">HTTPException</span><span class="p">(</span><span class="n">status_code</span><span class="o">=</span><span class="mi">401</span><span class="p">,</span> <span class="n">detail</span><span class="o">=</span><span class="s2">&quot;Invalid token&quot;</span><span class="p">)</span></div>
 
 
-<span class="c1"># ---------------------------</span>
-<span class="c1"># Deposits</span>
-<span class="c1"># ---------------------------</span>
+
 <div class="viewcode-block" id="deposit_endpoint">
 <a class="viewcode-back" href="../../../app.api.html#app.api.balance_routes.deposit_endpoint">[docs]</a>
 <span class="nd">@router</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="s2">&quot;/deposit&quot;</span><span class="p">)</span>
-<span class="k">def</span><span class="w"> </span><span class="nf">deposit_endpoint</span><span class="p">(</span><span class="n">balance</span><span class="p">:</span> <span class="n">DepositCreate</span><span class="p">,</span> <span class="n">current_user</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">get_current_user</span><span class="p">),</span> <span class="n">db</span><span class="p">:</span> <span class="n">Session</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">get_session</span><span class="p">)):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">deposit_endpoint</span><span class="p">(</span>
+    <span class="n">balance</span><span class="p">:</span> <span class="n">DepositCreate</span><span class="p">,</span>
+    <span class="n">current_user</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">get_current_user</span><span class="p">),</span>
+    <span class="n">db</span><span class="p">:</span> <span class="n">Session</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">get_session</span><span class="p">)</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Deposit money into a user&#39;s account.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        balance (DepositCreate): Deposit request payload.</span>
+<span class="sd">        current_user (int): Authenticated user ID.</span>
+<span class="sd">        db (Session): Database session.</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        HTTPException:</span>
+<span class="sd">            - If the account does not belong to the user.</span>
+<span class="sd">            - If the account is closed.</span>
+<span class="sd">            - If the deposit amount is invalid.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        dict: Confirmation message, updated balance, and deposit ID.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">balance</span><span class="o">.</span><span class="n">user_id</span> <span class="o">!=</span> <span class="n">current_user</span><span class="p">:</span>
         <span class="k">raise</span> <span class="n">HTTPException</span><span class="p">(</span><span class="n">status_code</span><span class="o">=</span><span class="mi">403</span><span class="p">,</span> <span class="n">detail</span><span class="o">=</span><span class="n">ACCESS_DENIED</span><span class="p">)</span>
-    
+
     <span class="n">account</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Account</span><span class="p">,</span> <span class="n">balance</span><span class="o">.</span><span class="n">account_id</span><span class="p">)</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">account</span><span class="p">:</span>
         <span class="k">raise</span> <span class="n">HTTPException</span><span class="p">(</span><span class="n">status_code</span><span class="o">=</span><span class="mi">404</span><span class="p">,</span> <span class="n">detail</span><span class="o">=</span><span class="n">ACCOUNT_NOT_FOUND</span><span class="p">)</span>
@@ -90,7 +133,7 @@
         <span class="k">raise</span> <span class="n">HTTPException</span><span class="p">(</span><span class="n">status_code</span><span class="o">=</span><span class="mi">400</span><span class="p">,</span> <span class="n">detail</span><span class="o">=</span><span class="n">ACCOUNT_CLOSED</span><span class="p">)</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">amount_verification</span><span class="p">(</span><span class="n">balance</span><span class="o">.</span><span class="n">amount</span><span class="p">):</span>
         <span class="k">raise</span> <span class="n">HTTPException</span><span class="p">(</span><span class="n">status_code</span><span class="o">=</span><span class="mi">400</span><span class="p">,</span> <span class="n">detail</span><span class="o">=</span><span class="n">INVALID_AMOUNT</span><span class="p">)</span>
-    
+
     <span class="n">account</span><span class="o">.</span><span class="n">balance</span> <span class="o">+=</span> <span class="n">balance</span><span class="o">.</span><span class="n">amount</span>
     <span class="n">deposit</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">Deposit</span><span class="p">(</span>
         <span class="n">account_id</span><span class="o">=</span><span class="n">account</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
@@ -103,13 +146,36 @@
     <span class="n">db</span><span class="o">.</span><span class="n">refresh</span><span class="p">(</span><span class="n">deposit</span><span class="p">)</span>
     <span class="n">db</span><span class="o">.</span><span class="n">refresh</span><span class="p">(</span><span class="n">account</span><span class="p">)</span>
 
-    <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;message&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;Dépot de </span><span class="si">{</span><span class="n">balance</span><span class="o">.</span><span class="n">amount</span><span class="si">}</span><span class="s2">€ effectué&quot;</span><span class="p">,</span> <span class="s2">&quot;new_balance&quot;</span><span class="p">:</span> <span class="n">account</span><span class="o">.</span><span class="n">balance</span><span class="p">,</span> <span class="s2">&quot;deposit_id&quot;</span><span class="p">:</span> <span class="n">deposit</span><span class="o">.</span><span class="n">id</span><span class="p">}</span></div>
+    <span class="k">return</span> <span class="p">{</span>
+        <span class="s2">&quot;message&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;Dépot de </span><span class="si">{</span><span class="n">balance</span><span class="o">.</span><span class="n">amount</span><span class="si">}</span><span class="s2">€ effectué&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;new_balance&quot;</span><span class="p">:</span> <span class="n">account</span><span class="o">.</span><span class="n">balance</span><span class="p">,</span>
+        <span class="s2">&quot;deposit_id&quot;</span><span class="p">:</span> <span class="n">deposit</span><span class="o">.</span><span class="n">id</span>
+    <span class="p">}</span></div>
+
 
 
 <div class="viewcode-block" id="list_deposits">
 <a class="viewcode-back" href="../../../app.api.html#app.api.balance_routes.list_deposits">[docs]</a>
 <span class="nd">@router</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;/deposits/</span><span class="si">{account_id}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">response_model</span><span class="o">=</span><span class="nb">list</span><span class="p">[</span><span class="n">models</span><span class="o">.</span><span class="n">Deposit</span><span class="p">])</span>
-<span class="k">def</span><span class="w"> </span><span class="nf">list_deposits</span><span class="p">(</span><span class="n">account_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">current_user</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">get_current_user</span><span class="p">),</span> <span class="n">db</span><span class="p">:</span> <span class="n">Session</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">get_session</span><span class="p">)):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">list_deposits</span><span class="p">(</span>
+    <span class="n">account_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">current_user</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">get_current_user</span><span class="p">),</span>
+    <span class="n">db</span><span class="p">:</span> <span class="n">Session</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">get_session</span><span class="p">)</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Retrieve all deposits for a specific account.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        account_id (int): Account identifier.</span>
+<span class="sd">        current_user (int): Authenticated user ID.</span>
+<span class="sd">        db (Session): Database session.</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        HTTPException: If access is denied or the account is closed.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        list[Deposit]: List of deposits ordered by date.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">account</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Account</span><span class="p">,</span> <span class="n">account_id</span><span class="p">)</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">account</span> <span class="ow">or</span> <span class="n">account</span><span class="o">.</span><span class="n">user_id</span> <span class="o">!=</span> <span class="n">current_user</span><span class="p">:</span>
         <span class="k">raise</span> <span class="n">HTTPException</span><span class="p">(</span><span class="n">status_code</span><span class="o">=</span><span class="mi">403</span><span class="p">,</span> <span class="n">detail</span><span class="o">=</span><span class="n">ACCESS_DENIED</span><span class="p">)</span>
@@ -124,16 +190,35 @@
     <span class="k">return</span> <span class="n">deposits</span></div>
 
 
-<span class="c1"># ---------------------------</span>
-<span class="c1"># Withdraws</span>
-<span class="c1"># ---------------------------</span>
+
 <div class="viewcode-block" id="withdraw_endpoint">
 <a class="viewcode-back" href="../../../app.api.html#app.api.balance_routes.withdraw_endpoint">[docs]</a>
 <span class="nd">@router</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="s2">&quot;/withdraw&quot;</span><span class="p">)</span>
-<span class="k">def</span><span class="w"> </span><span class="nf">withdraw_endpoint</span><span class="p">(</span><span class="n">balance</span><span class="p">:</span> <span class="n">WithdrawCreate</span><span class="p">,</span> <span class="n">current_user</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">get_current_user</span><span class="p">),</span> <span class="n">db</span><span class="p">:</span> <span class="n">Session</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">get_session</span><span class="p">)):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">withdraw_endpoint</span><span class="p">(</span>
+    <span class="n">balance</span><span class="p">:</span> <span class="n">WithdrawCreate</span><span class="p">,</span>
+    <span class="n">current_user</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">get_current_user</span><span class="p">),</span>
+    <span class="n">db</span><span class="p">:</span> <span class="n">Session</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">get_session</span><span class="p">)</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Withdraw money from a user&#39;s account.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        balance (WithdrawCreate): Withdrawal request payload.</span>
+<span class="sd">        current_user (int): Authenticated user ID.</span>
+<span class="sd">        db (Session): Database session.</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        HTTPException:</span>
+<span class="sd">            - If the account is invalid or closed.</span>
+<span class="sd">            - If the withdrawal amount is invalid.</span>
+<span class="sd">            - If the account balance is insufficient.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        dict: Confirmation message and updated balance.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">balance</span><span class="o">.</span><span class="n">user_id</span> <span class="o">!=</span> <span class="n">current_user</span><span class="p">:</span>
         <span class="k">raise</span> <span class="n">HTTPException</span><span class="p">(</span><span class="n">status_code</span><span class="o">=</span><span class="mi">403</span><span class="p">,</span> <span class="n">detail</span><span class="o">=</span><span class="n">ACCESS_DENIED</span><span class="p">)</span>
-    
+
     <span class="n">account</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Account</span><span class="p">,</span> <span class="n">balance</span><span class="o">.</span><span class="n">account_id</span><span class="p">)</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">account</span><span class="p">:</span>
         <span class="k">raise</span> <span class="n">HTTPException</span><span class="p">(</span><span class="n">status_code</span><span class="o">=</span><span class="mi">404</span><span class="p">,</span> <span class="n">detail</span><span class="o">=</span><span class="n">ACCOUNT_NOT_FOUND</span><span class="p">)</span>
@@ -145,7 +230,7 @@
         <span class="k">raise</span> <span class="n">HTTPException</span><span class="p">(</span><span class="n">status_code</span><span class="o">=</span><span class="mi">400</span><span class="p">,</span> <span class="n">detail</span><span class="o">=</span><span class="n">INVALID_AMOUNT</span><span class="p">)</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">enough_amount</span><span class="p">(</span><span class="n">balance</span><span class="o">.</span><span class="n">amount</span><span class="p">,</span> <span class="n">account</span><span class="o">.</span><span class="n">balance</span><span class="p">):</span>
         <span class="k">raise</span> <span class="n">HTTPException</span><span class="p">(</span><span class="n">status_code</span><span class="o">=</span><span class="mi">400</span><span class="p">,</span> <span class="n">detail</span><span class="o">=</span><span class="n">INSUFFICIENT_BALANCE</span><span class="p">)</span>
-    
+
     <span class="n">account</span><span class="o">.</span><span class="n">balance</span> <span class="o">-=</span> <span class="n">balance</span><span class="o">.</span><span class="n">amount</span>
     <span class="n">withdraw</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">Withdraw</span><span class="p">(</span>
         <span class="n">account_id</span><span class="o">=</span><span class="n">account</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
@@ -158,13 +243,32 @@
     <span class="n">db</span><span class="o">.</span><span class="n">refresh</span><span class="p">(</span><span class="n">withdraw</span><span class="p">)</span>
     <span class="n">db</span><span class="o">.</span><span class="n">refresh</span><span class="p">(</span><span class="n">account</span><span class="p">)</span>
 
-    <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;message&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;Retrait de </span><span class="si">{</span><span class="n">balance</span><span class="o">.</span><span class="n">amount</span><span class="si">}</span><span class="s2">€ effectué&quot;</span><span class="p">,</span> <span class="s2">&quot;new_balance&quot;</span><span class="p">:</span> <span class="n">account</span><span class="o">.</span><span class="n">balance</span><span class="p">}</span></div>
+    <span class="k">return</span> <span class="p">{</span>
+        <span class="s2">&quot;message&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;Retrait de </span><span class="si">{</span><span class="n">balance</span><span class="o">.</span><span class="n">amount</span><span class="si">}</span><span class="s2">€ effectué&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;new_balance&quot;</span><span class="p">:</span> <span class="n">account</span><span class="o">.</span><span class="n">balance</span>
+    <span class="p">}</span></div>
+
 
 
 <div class="viewcode-block" id="list_withdraws">
 <a class="viewcode-back" href="../../../app.api.html#app.api.balance_routes.list_withdraws">[docs]</a>
 <span class="nd">@router</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;/withdraws/</span><span class="si">{account_id}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">response_model</span><span class="o">=</span><span class="nb">list</span><span class="p">[</span><span class="n">models</span><span class="o">.</span><span class="n">Withdraw</span><span class="p">])</span>
-<span class="k">def</span><span class="w"> </span><span class="nf">list_withdraws</span><span class="p">(</span><span class="n">account_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">current_user</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">get_current_user</span><span class="p">),</span> <span class="n">db</span><span class="p">:</span> <span class="n">Session</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">get_session</span><span class="p">)):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">list_withdraws</span><span class="p">(</span>
+    <span class="n">account_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">current_user</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">get_current_user</span><span class="p">),</span>
+    <span class="n">db</span><span class="p">:</span> <span class="n">Session</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">get_session</span><span class="p">)</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Retrieve all withdrawals for a specific account.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        account_id (int): Account identifier.</span>
+<span class="sd">        current_user (int): Authenticated user ID.</span>
+<span class="sd">        db (Session): Database session.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        list[Withdraw]: List of withdrawals ordered by date.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">account</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Account</span><span class="p">,</span> <span class="n">account_id</span><span class="p">)</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">account</span> <span class="ow">or</span> <span class="n">account</span><span class="o">.</span><span class="n">user_id</span> <span class="o">!=</span> <span class="n">current_user</span><span class="p">:</span>
         <span class="k">raise</span> <span class="n">HTTPException</span><span class="p">(</span><span class="n">status_code</span><span class="o">=</span><span class="mi">403</span><span class="p">,</span> <span class="n">detail</span><span class="o">=</span><span class="n">ACCESS_DENIED</span><span class="p">)</span>
@@ -179,12 +283,17 @@
     <span class="k">return</span> <span class="n">withdraws</span></div>
 
 
-<span class="c1"># ---------------------------</span>
-<span class="c1"># Transfers</span>
-<span class="c1"># ---------------------------</span>
+
 <div class="viewcode-block" id="complete_transfer_task">
 <a class="viewcode-back" href="../../../app.api.html#app.api.balance_routes.complete_transfer_task">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">complete_transfer_task</span><span class="p">(</span><span class="n">db</span><span class="p">:</span> <span class="n">Session</span><span class="p">,</span> <span class="n">transfer_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Finalize a pending transfer by crediting the recipient account.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        db (Session): Database session.</span>
+<span class="sd">        transfer_id (int): Transfer identifier.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">transfer</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Transfer</span><span class="p">,</span> <span class="n">transfer_id</span><span class="p">)</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">transfer</span> <span class="ow">or</span> <span class="n">transfer</span><span class="o">.</span><span class="n">status</span> <span class="o">!=</span> <span class="s2">&quot;pending&quot;</span><span class="p">:</span>
         <span class="k">return</span>
@@ -199,20 +308,52 @@
     <span class="n">db</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span></div>
 
 
+
 <div class="viewcode-block" id="delayed_complete_transfer">
 <a class="viewcode-back" href="../../../app.api.html#app.api.balance_routes.delayed_complete_transfer">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">delayed_complete_transfer</span><span class="p">(</span><span class="n">transfer_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">db</span><span class="p">:</span> <span class="n">Session</span><span class="p">,</span> <span class="n">delay</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">30</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Delay transfer completion to simulate processing time.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        transfer_id (int): Transfer identifier.</span>
+<span class="sd">        db (Session): Database session.</span>
+<span class="sd">        delay (int): Delay in seconds.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">sleep</span><span class="p">(</span><span class="n">delay</span><span class="p">)</span>
     <span class="n">complete_transfer_task</span><span class="p">(</span><span class="n">db</span><span class="p">,</span> <span class="n">transfer_id</span><span class="p">)</span></div>
+
 
 
 <div class="viewcode-block" id="transfer_endpoint">
 <a class="viewcode-back" href="../../../app.api.html#app.api.balance_routes.transfer_endpoint">[docs]</a>
 <span class="nd">@router</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="s2">&quot;/transfer&quot;</span><span class="p">)</span>
-<span class="k">def</span><span class="w"> </span><span class="nf">transfer_endpoint</span><span class="p">(</span><span class="n">balance</span><span class="p">:</span> <span class="n">TransferByRIB</span><span class="p">,</span> <span class="n">background_tasks</span><span class="p">:</span> <span class="n">BackgroundTasks</span><span class="p">,</span> <span class="n">current_user</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">get_current_user</span><span class="p">),</span> <span class="n">db</span><span class="p">:</span> <span class="n">Session</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">get_session</span><span class="p">)):</span>
-    <span class="n">recipient</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">exec</span><span class="p">(</span><span class="n">select</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Account</span><span class="p">)</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Account</span><span class="o">.</span><span class="n">rib</span> <span class="o">==</span> <span class="n">balance</span><span class="o">.</span><span class="n">to_rib</span><span class="p">))</span><span class="o">.</span><span class="n">first</span><span class="p">()</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">transfer_endpoint</span><span class="p">(</span>
+    <span class="n">balance</span><span class="p">:</span> <span class="n">TransferByRIB</span><span class="p">,</span>
+    <span class="n">background_tasks</span><span class="p">:</span> <span class="n">BackgroundTasks</span><span class="p">,</span>
+    <span class="n">current_user</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">get_current_user</span><span class="p">),</span>
+    <span class="n">db</span><span class="p">:</span> <span class="n">Session</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">get_session</span><span class="p">)</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Initiate a transfer between two accounts using a recipient RIB.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        balance (TransferByRIB): Transfer payload.</span>
+<span class="sd">        background_tasks (BackgroundTasks): Background task manager.</span>
+<span class="sd">        current_user (int): Authenticated user ID.</span>
+<span class="sd">        db (Session): Database session.</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        HTTPException: If the transfer cannot be initiated.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        dict: Transfer status and updated sender balance.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">recipient</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">exec</span><span class="p">(</span>
+        <span class="n">select</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Account</span><span class="p">)</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Account</span><span class="o">.</span><span class="n">rib</span> <span class="o">==</span> <span class="n">balance</span><span class="o">.</span><span class="n">to_rib</span><span class="p">)</span>
+    <span class="p">)</span><span class="o">.</span><span class="n">first</span><span class="p">()</span>
     <span class="n">sender</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Account</span><span class="p">,</span> <span class="n">balance</span><span class="o">.</span><span class="n">from_account_id</span><span class="p">)</span>
-    
+
     <span class="k">if</span> <span class="ow">not</span> <span class="n">sender</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">recipient</span><span class="p">:</span>
         <span class="k">raise</span> <span class="n">HTTPException</span><span class="p">(</span><span class="n">status_code</span><span class="o">=</span><span class="mi">404</span><span class="p">,</span> <span class="n">detail</span><span class="o">=</span><span class="n">ACCOUNT_NOT_FOUND</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">sender</span><span class="o">.</span><span class="n">user_id</span> <span class="o">!=</span> <span class="n">current_user</span><span class="p">:</span>
@@ -225,7 +366,7 @@
         <span class="k">raise</span> <span class="n">HTTPException</span><span class="p">(</span><span class="n">status_code</span><span class="o">=</span><span class="mi">400</span><span class="p">,</span> <span class="n">detail</span><span class="o">=</span><span class="n">INVALID_AMOUNT</span><span class="p">)</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">enough_amount</span><span class="p">(</span><span class="n">balance</span><span class="o">.</span><span class="n">amount</span><span class="p">,</span> <span class="n">sender</span><span class="o">.</span><span class="n">balance</span><span class="p">):</span>
         <span class="k">raise</span> <span class="n">HTTPException</span><span class="p">(</span><span class="n">status_code</span><span class="o">=</span><span class="mi">400</span><span class="p">,</span> <span class="n">detail</span><span class="o">=</span><span class="n">INSUFFICIENT_BALANCE</span><span class="p">)</span>
-    
+
     <span class="n">sender</span><span class="o">.</span><span class="n">balance</span> <span class="o">-=</span> <span class="n">balance</span><span class="o">.</span><span class="n">amount</span>
     <span class="n">transfer</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">Transfer</span><span class="p">(</span>
         <span class="n">from_account_id</span><span class="o">=</span><span class="n">sender</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
@@ -240,22 +381,52 @@
     <span class="n">db</span><span class="o">.</span><span class="n">refresh</span><span class="p">(</span><span class="n">transfer</span><span class="p">)</span>
     <span class="n">db</span><span class="o">.</span><span class="n">refresh</span><span class="p">(</span><span class="n">sender</span><span class="p">)</span>
 
-    <span class="n">background_tasks</span><span class="o">.</span><span class="n">add_task</span><span class="p">(</span><span class="n">delayed_complete_transfer</span><span class="p">,</span> <span class="n">transfer_id</span><span class="o">=</span><span class="n">transfer</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">db</span><span class="o">=</span><span class="n">db</span><span class="p">,</span> <span class="n">delay</span><span class="o">=</span><span class="mi">30</span><span class="p">)</span>
+    <span class="n">background_tasks</span><span class="o">.</span><span class="n">add_task</span><span class="p">(</span>
+        <span class="n">delayed_complete_transfer</span><span class="p">,</span>
+        <span class="n">transfer_id</span><span class="o">=</span><span class="n">transfer</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
+        <span class="n">db</span><span class="o">=</span><span class="n">db</span><span class="p">,</span>
+        <span class="n">delay</span><span class="o">=</span><span class="mi">30</span>
+    <span class="p">)</span>
 
-    <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;message&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;Transfert de </span><span class="si">{</span><span class="n">balance</span><span class="o">.</span><span class="n">amount</span><span class="si">}</span><span class="s2">€ initié&quot;</span><span class="p">,</span> <span class="s2">&quot;transfer_id&quot;</span><span class="p">:</span> <span class="n">transfer</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;pending&quot;</span><span class="p">,</span> <span class="s2">&quot;new_balance_sender&quot;</span><span class="p">:</span> <span class="n">sender</span><span class="o">.</span><span class="n">balance</span><span class="p">}</span></div>
+    <span class="k">return</span> <span class="p">{</span>
+        <span class="s2">&quot;message&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;Transfert de </span><span class="si">{</span><span class="n">balance</span><span class="o">.</span><span class="n">amount</span><span class="si">}</span><span class="s2">€ initié&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;transfer_id&quot;</span><span class="p">:</span> <span class="n">transfer</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
+        <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;pending&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;new_balance_sender&quot;</span><span class="p">:</span> <span class="n">sender</span><span class="o">.</span><span class="n">balance</span>
+    <span class="p">}</span></div>
+
 
 
 <div class="viewcode-block" id="abort_transfer">
 <a class="viewcode-back" href="../../../app.api.html#app.api.balance_routes.abort_transfer">[docs]</a>
 <span class="nd">@router</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="s2">&quot;/transfer_abort/</span><span class="si">{transfer_id}</span><span class="s2">&quot;</span><span class="p">)</span>
-<span class="k">def</span><span class="w"> </span><span class="nf">abort_transfer</span><span class="p">(</span><span class="n">transfer_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">current_user</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">get_current_user</span><span class="p">),</span> <span class="n">db</span><span class="p">:</span> <span class="n">Session</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">get_session</span><span class="p">)):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">abort_transfer</span><span class="p">(</span>
+    <span class="n">transfer_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">current_user</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">get_current_user</span><span class="p">),</span>
+    <span class="n">db</span><span class="p">:</span> <span class="n">Session</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">get_session</span><span class="p">)</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Abort a pending transfer and refund the sender.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        transfer_id (int): Transfer identifier.</span>
+<span class="sd">        current_user (int): Authenticated user ID.</span>
+<span class="sd">        db (Session): Database session.</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        HTTPException: If the transfer cannot be aborted.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        dict: Cancellation confirmation.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">transfer</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Transfer</span><span class="p">,</span> <span class="n">transfer_id</span><span class="p">)</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">transfer</span> <span class="ow">or</span> <span class="n">transfer</span><span class="o">.</span><span class="n">status</span> <span class="o">!=</span> <span class="s2">&quot;pending&quot;</span><span class="p">:</span>
         <span class="k">raise</span> <span class="n">HTTPException</span><span class="p">(</span><span class="n">status_code</span><span class="o">=</span><span class="mi">404</span><span class="p">,</span> <span class="n">detail</span><span class="o">=</span><span class="n">TRANSFER_NOT_FOUND</span><span class="p">)</span>
+
     <span class="n">sender</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Account</span><span class="p">,</span> <span class="n">transfer</span><span class="o">.</span><span class="n">from_account_id</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">sender</span><span class="o">.</span><span class="n">user_id</span> <span class="o">!=</span> <span class="n">current_user</span><span class="p">:</span>
         <span class="k">raise</span> <span class="n">HTTPException</span><span class="p">(</span><span class="n">status_code</span><span class="o">=</span><span class="mi">403</span><span class="p">,</span> <span class="n">detail</span><span class="o">=</span><span class="n">ACCESS_DENIED</span><span class="p">)</span>
-    
+
     <span class="n">sender</span><span class="o">.</span><span class="n">balance</span> <span class="o">+=</span> <span class="n">transfer</span><span class="o">.</span><span class="n">amount</span>
     <span class="n">transfer</span><span class="o">.</span><span class="n">status</span> <span class="o">=</span> <span class="s2">&quot;aborted&quot;</span>
     <span class="n">db</span><span class="o">.</span><span class="n">add_all</span><span class="p">([</span><span class="n">sender</span><span class="p">,</span> <span class="n">transfer</span><span class="p">])</span>
@@ -263,12 +434,29 @@
     <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;message&quot;</span><span class="p">:</span> <span class="s2">&quot;Transfert annulé&quot;</span><span class="p">}</span></div>
 
 
+
 <div class="viewcode-block" id="get_user_transfers">
 <a class="viewcode-back" href="../../../app.api.html#app.api.balance_routes.get_user_transfers">[docs]</a>
 <span class="nd">@router</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;/transfers&quot;</span><span class="p">)</span>
-<span class="k">def</span><span class="w"> </span><span class="nf">get_user_transfers</span><span class="p">(</span><span class="n">current_user</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">get_current_user</span><span class="p">),</span> <span class="n">db</span><span class="p">:</span> <span class="n">Session</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">get_session</span><span class="p">)):</span>
-    <span class="n">accounts</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">exec</span><span class="p">(</span><span class="n">select</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Account</span><span class="p">)</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Account</span><span class="o">.</span><span class="n">user_id</span> <span class="o">==</span> <span class="n">current_user</span><span class="p">))</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_user_transfers</span><span class="p">(</span>
+    <span class="n">current_user</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">get_current_user</span><span class="p">),</span>
+    <span class="n">db</span><span class="p">:</span> <span class="n">Session</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">get_session</span><span class="p">)</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Retrieve all transfers involving the authenticated user&#39;s accounts.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        current_user (int): Authenticated user ID.</span>
+<span class="sd">        db (Session): Database session.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        list[Transfer]: List of transfers ordered by date.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">accounts</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">exec</span><span class="p">(</span>
+        <span class="n">select</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Account</span><span class="p">)</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Account</span><span class="o">.</span><span class="n">user_id</span> <span class="o">==</span> <span class="n">current_user</span><span class="p">)</span>
+    <span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
     <span class="n">account_ids</span> <span class="o">=</span> <span class="p">[</span><span class="n">acc</span><span class="o">.</span><span class="n">id</span> <span class="k">for</span> <span class="n">acc</span> <span class="ow">in</span> <span class="n">accounts</span><span class="p">]</span>
+
     <span class="n">transfers</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">exec</span><span class="p">(</span>
         <span class="n">select</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Transfer</span><span class="p">)</span>
         <span class="o">.</span><span class="n">where</span><span class="p">(</span>
@@ -306,6 +494,10 @@
     </div>
 </search>
 <script>document.getElementById('searchbox').style.display = "block"</script><h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules.html">app</a></li>
+</ul>
 
 <div class="relations">
 <h3>Related Topics</h3>
