@@ -6,6 +6,13 @@
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
+import os
+import sys
+
+# Allow Sphinx to find the application source code
+sys.path.insert(0, os.path.abspath("../.."))
+
+
 project = 'back-api-bankproject'
 copyright = '2025, thimeobloc'
 author = 'thimeobloc'
@@ -14,7 +21,12 @@ release = '1.0'
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
-extensions = []
+extensions = [
+
+    "sphinx.ext.autodoc",
+    "sphinx.ext.napoleon",
+    "sphinx.ext.viewcode"
+]
 
 templates_path = ['_templates']
 exclude_patterns = []
