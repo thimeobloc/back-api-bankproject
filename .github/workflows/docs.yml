@@ -1,0 +1,53 @@
+name: Generate Sphinx Documentation
+
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+
+# Définition des jobs du pipeline
+jobs:
+  build-docs:
+    # Nom lisible du job
+    name: Build Sphinx documentation
+
+    # Environnement d’exécution (machine virtuelle GitHub)
+    runs-on: ubuntu-latest
+
+    # Étapes exécutées séquentiellement
+    steps:
+      # Étape 1 : récupération du code source du dépôt
+      - name: Checkout source code
+        uses: actions/checkout@v4
+
+      # Étape 2 : installation de Python dans l’environnement du runner
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      # Étape 3 : installation des dépendances du projet
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      # Étape 4 : génération automatique des fichiers .rst
+      - name: Generate API documentation (sphinx-apidoc)
+        run: |
+          sphinx-apidoc -o docs/source app
+
+      # Étape 5 : construction de la documentation HTML
+      - name: Build HTML documentation
+        run: |
+          cd docs
+          sphinx-build -b html source build/html
+
+      # Étape 6 : publication de la documentation générée
+      - name: Upload documentation as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: back-api-bankproject-docs
+          path: docs/build/html
