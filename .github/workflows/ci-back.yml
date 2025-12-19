@@ -1,3 +1,4 @@
+# Nom du workflow CI pour le backend Python
 name: CI Backend - Python
 
 on:
@@ -9,40 +10,48 @@ on:
 
 jobs:
   build:
+    # Exécution sur une machine Ubuntu fournie par GitHub
     runs-on: ubuntu-latest
 
     steps:
+      # Récupération du code du dépôt
       - name: Checkout code
         uses: actions/checkout@v4
 
+      # Installation et configuration de Python 3.11
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
 
+      # Installation des dépendances du projet
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
+      # Vérification de la compilation du code Python
       - name: Build check
         run: |
           python -m compileall app
 
+      # Configuration du PYTHONPATH pour l’exécution des tests
       - name: Set PYTHONPATH
         run: echo "PYTHONPATH=${{ github.workspace }}" >> $GITHUB_ENV
 
+      # Exécution des tests unitaires avec couverture de code
       - name: Run unit tests with coverage
         env:
           DATABASE_URL: "sqlite:///:memory:"
         run: |
           pytest --maxfail=1 --disable-warnings -q --cov=app --cov-report=xml
 
+      # Génération de la documentation du projet
       - name: Build documentation
         run: |
           python -m sphinx -b html docs/source docs/build/html
 
-
+      # Archivage de la documentation générée comme artefact CI
       - name: Upload documentation artifact
         uses: actions/upload-artifact@v4
         with:
