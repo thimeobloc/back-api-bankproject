@@ -33,9 +33,7 @@ jobs:
           IMAGE_NAME=back-api-bankproject
           TAG=${{ github.sha }}
           docker build -t $IMAGE_NAME:$TAG .
-          docker tag $IMAGE_NAME:$TAG $IMAGE_NAME:latest
           docker tag $IMAGE_NAME:$TAG ${{ secrets.DOCKER_USERNAME }}/$IMAGE_NAME:$TAG
-          docker tag $IMAGE_NAME:$TAG $IMAGE_NAME:latest
 
       # 5. Pousser l'image sur Docker Hub
       - name: Push Docker image
@@ -43,4 +41,3 @@ jobs:
           IMAGE_NAME=back-api-bankproject
           TAG=${{ github.sha }}
           docker push ${{ secrets.DOCKER_USERNAME }}/$IMAGE_NAME:$TAG
-          docker push ${{ secrets.DOCKER_USERNAME }}/$IMAGE_NAME:latest

@@ -1,0 +1,46 @@
+name: Generate SBOM
+
+# Déclenchement à chaque push ou PR
+on:
+  push:
+    branches:
+      - main
+      - dev
+  pull_request:
+
+jobs:
+  sbom:
+    runs-on: ubuntu-latest
+    name: Generate SBOM
+
+    steps:
+      # Récupérer le code
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Configurer Python
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      # Installer les dépendances
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      # Installer l’outil CycloneDX
+      - name: Install CycloneDX
+        run: pip install cyclonedx-bom
+
+      # Générer le SBOM depuis l’environnement virtuel
+      - name: Generate SBOM
+        run: cyclonedx-py venv -o sbom.json
+
+      # Télécharger le SBOM comme artefact
+      - name: Upload SBOM artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: sbom
+          path: sbom.json
